@@ -69,10 +69,6 @@ def main(track_opts: dict,
         output_path_veh_dyn_info = os.path.join(output_path, "veh_dyn_info")
         os.makedirs(output_path_veh_dyn_info, exist_ok=True)
 
-        veh_name = solver_opts["vehicle"][:-4]
-        outfilepath_ggv = os.path.join(output_path_veh_dyn_info, "ggv_%s.csv" % veh_name)
-        outfilepath_ax_max_machines = os.path.join(output_path_veh_dyn_info, "ax_max_machines_%s.csv" % veh_name)
-
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -107,11 +103,13 @@ def main(track_opts: dict,
     # debug plot
     if debug_opts["use_debug_plots"]:
         # check if track map exists and set path accordingly
-        mapfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "maps",
-                                   track_opts["trackname"] + "_2017.png")
+        mapfolderpath = os.path.join(repo_path, "laptimesim", "input", "tracks", "maps")
+        mapfilepath = ""
 
-        if not os.path.isfile(mapfilepath):
-            mapfilepath = ""
+        for mapfile in os.listdir(mapfolderpath):
+            if track_opts["trackname"] in mapfile:
+                mapfilepath = os.path.join(mapfolderpath, mapfile)
+                break
 
         # plot trackmap
         track.plot_trackmap(mapfilepath=mapfilepath)
@@ -131,7 +129,7 @@ def main(track_opts: dict,
     # create instance
     if solver_opts["series"] == "F1":
         car = laptimesim.src.car_hybrid.CarHybrid(parfilepath=parfilepath)
-    elif solver_opts["series"] in ["FE", "RR", "FSE"]:
+    elif solver_opts["series"] == "FE":
         car = laptimesim.src.car_electric.CarElectric(parfilepath=parfilepath)
     else:
         raise IOError("Unknown racing series!")
@@ -178,6 +176,9 @@ def main(track_opts: dict,
 
         # debug plot
         if debug_opts["use_debug_plots"]:
+            # plot torques
+            lap.plot_torques()
+
             # plot lateral acceleration profile
             lap.plot_lat_acc()
 
@@ -186,6 +187,9 @@ def main(track_opts: dict,
 
             # plot aero forces
             lap.plot_aero_forces()
+
+            # plot engine speed and gear selection
+            lap.plot_enginespeed_gears()
 
     else:
         # sensitivity analysis -----------------------------------------------------------------------------------------
@@ -225,18 +229,6 @@ def main(track_opts: dict,
         else:
             sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
             # TODO: implementation of COG and aero variation missing
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # COMPARE VELOCITY PROFILE AND LAP TIME WITH FB SOLVER FROM TPH ----------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-
-    if debug_opts["use_plot_comparison_tph"]:
-        laptimesim.src.comparison_LTS_to_TPH.\
-            comparison_LTS_to_TPH(car=car,
-                                  lap=lap,
-                                  track=track,
-                                  outfilepath_ggv=outfilepath_ggv,
-                                  outfilepath_ax_max_machines=outfilepath_ax_max_machines)
 
     # ------------------------------------------------------------------------------------------------------------------
     # EXPORT -----------------------------------------------------------------------------------------------------------
@@ -290,7 +282,7 @@ def main(track_opts: dict,
     tmp_data = np.column_stack((lap.trackobj.dists_cl[:-1], lap.vel_cl[:-1]))
 
     with open(output_path, "wb") as fh:
-        np.savetxt(fh, tmp_data, fmt="%.5f, %.5f", header="distance_m, vel_mps")
+        np.savetxt(fh, tmp_data, fmt="%.5f,%.5f", header="distance_m,vel_mps")
 
     # ------------------------------------------------------------------------------------------------------------------
     # PLOTS ------------------------------------------------------------------------------------------------------------

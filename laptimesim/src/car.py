@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from typing import Union
 
 
 class Car(object):
@@ -158,32 +157,31 @@ class Car(object):
             # print("WARNING: Very small tire load RR!")
             f_z_rr = 30.0
 
-        # tire force potentials (dmux_dfz/dmuy_dfz are negativ -> quadratic malus)
+        # tire force potentials (dmux_dfz and dmuy_dfz are negativ -> quadratic malus in the force)
         """
         The function is derived as follows:
-        F_x = mu_weather * mu_tire * F_z (mu_tire is hereby not constant as it decreases with rising tire loads)
-            = mu_weather * (mu_tire + dmu_tire/dF_z * F_z) * F_z (dmu_tire/dF_z is negative)
-            = mu_weather * (mu_tire * F_z + dmu_tire/dF_z * F_z^2)
+        F_x = mu_weather/track * mu_tire(F_z) * F_z (mu_tire hereby not constant as it decreases with rising tire loads)
+            = mu_weather/track * (mu_tire + dmu_tire/dF_z * (F_z - F_z0)) * F_z (dmu_tire/dF_z is negative)
         """
-        f_x_pot_fl = mu * (self.pars_tires["f"]["mux"] * f_z_fl
-                           + self.pars_tires["f"]["dmux_dfz"] * math.pow(f_z_fl, 2))
-        f_y_pot_fl = mu * (self.pars_tires["f"]["muy"] * f_z_fl
-                           + self.pars_tires["f"]["dmuy_dfz"] * math.pow(f_z_fl, 2))
+        f_x_pot_fl = mu * (self.pars_tires["f"]["mux"]
+                           + self.pars_tires["f"]["dmux_dfz"] * (f_z_fl - self.pars_tires["f"]["fz_0"])) * f_z_fl
+        f_y_pot_fl = mu * (self.pars_tires["f"]["muy"]
+                           + self.pars_tires["f"]["dmuy_dfz"] * (f_z_fl - self.pars_tires["f"]["fz_0"])) * f_z_fl
 
-        f_x_pot_fr = mu * (self.pars_tires["f"]["mux"] * f_z_fr
-                           + self.pars_tires["f"]["dmux_dfz"] * math.pow(f_z_fr, 2))
-        f_y_pot_fr = mu * (self.pars_tires["f"]["muy"] * f_z_fr
-                           + self.pars_tires["f"]["dmuy_dfz"] * math.pow(f_z_fr, 2))
+        f_x_pot_fr = mu * (self.pars_tires["f"]["mux"]
+                           + self.pars_tires["f"]["dmux_dfz"] * (f_z_fr - self.pars_tires["f"]["fz_0"])) * f_z_fr
+        f_y_pot_fr = mu * (self.pars_tires["f"]["muy"]
+                           + self.pars_tires["f"]["dmuy_dfz"] * (f_z_fr - self.pars_tires["f"]["fz_0"])) * f_z_fr
 
-        f_x_pot_rl = mu * (self.pars_tires["r"]["mux"] * f_z_rl
-                           + self.pars_tires["r"]["dmux_dfz"] * math.pow(f_z_rl, 2))
-        f_y_pot_rl = mu * (self.pars_tires["r"]["muy"] * f_z_rl
-                           + self.pars_tires["r"]["dmuy_dfz"] * math.pow(f_z_rl, 2))
+        f_x_pot_rl = mu * (self.pars_tires["r"]["mux"]
+                           + self.pars_tires["r"]["dmux_dfz"] * (f_z_rl - self.pars_tires["r"]["fz_0"])) * f_z_rl
+        f_y_pot_rl = mu * (self.pars_tires["r"]["muy"]
+                           + self.pars_tires["r"]["dmuy_dfz"] * (f_z_rl - self.pars_tires["r"]["fz_0"])) * f_z_rl
 
-        f_x_pot_rr = mu * (self.pars_tires["r"]["mux"] * f_z_rr
-                           + self.pars_tires["r"]["dmux_dfz"] * math.pow(f_z_rr, 2))
-        f_y_pot_rr = mu * (self.pars_tires["r"]["muy"] * f_z_rr
-                           + self.pars_tires["r"]["dmuy_dfz"] * math.pow(f_z_rr, 2))
+        f_x_pot_rr = mu * (self.pars_tires["r"]["mux"]
+                           + self.pars_tires["r"]["dmux_dfz"] * (f_z_rr - self.pars_tires["r"]["fz_0"])) * f_z_rr
+        f_y_pot_rr = mu * (self.pars_tires["r"]["muy"]
+                           + self.pars_tires["r"]["dmuy_dfz"] * (f_z_rr - self.pars_tires["r"]["fz_0"])) * f_z_rr
 
         return (f_x_pot_fl, f_y_pot_fl, f_z_fl,
                 f_x_pot_fr, f_y_pot_fr, f_z_fr,
@@ -194,10 +192,14 @@ class Car(object):
         # calculate relevant data
         f_z_range = np.arange(500.0, 13000.0, 500.0)
 
-        f_x_f = self.pars_tires["f"]["mux"] * f_z_range + self.pars_tires["f"]["dmux_dfz"] * np.power(f_z_range, 2)
-        f_y_f = self.pars_tires["f"]["muy"] * f_z_range + self.pars_tires["f"]["dmuy_dfz"] * np.power(f_z_range, 2)
-        f_x_r = self.pars_tires["r"]["mux"] * f_z_range + self.pars_tires["r"]["dmux_dfz"] * np.power(f_z_range, 2)
-        f_y_r = self.pars_tires["r"]["muy"] * f_z_range + self.pars_tires["r"]["dmuy_dfz"] * np.power(f_z_range, 2)
+        f_x_f = (self.pars_tires["f"]["mux"]
+                 + self.pars_tires["f"]["dmux_dfz"] * (f_z_range - self.pars_tires["f"]["fz_0"])) * f_z_range
+        f_y_f = (self.pars_tires["f"]["muy"]
+                 + self.pars_tires["f"]["dmuy_dfz"] * (f_z_range - self.pars_tires["f"]["fz_0"])) * f_z_range
+        f_x_r = (self.pars_tires["r"]["mux"]
+                 + self.pars_tires["r"]["dmux_dfz"] * (f_z_range - self.pars_tires["r"]["fz_0"])) * f_z_range
+        f_y_r = (self.pars_tires["r"]["muy"]
+                 + self.pars_tires["r"]["dmuy_dfz"] * (f_z_range - self.pars_tires["r"]["fz_0"])) * f_z_range
 
         # plot
         plt.figure()
@@ -207,6 +209,7 @@ class Car(object):
         plt.plot(f_z_range, f_x_r)
         plt.plot(f_z_range, f_y_r)
 
+        plt.grid()
         plt.title("Tire force characteristics")
         plt.xlabel("F_z in N")
         plt.ylabel("Forces F_x and F_y in N")
@@ -249,9 +252,9 @@ class Car(object):
         else:
             return 0.5 * c_w_a * rho_air * math.pow(vel, 2)
 
-    def roll_res(self) -> float:
+    def roll_res(self, f_z_tot: float) -> float:
         """Output is in N."""
-        return self.pars_general["m"] * self.pars_general["g"] * self.pars_general["f_roll"]
+        return f_z_tot * self.pars_general["f_roll"]
 
     def calc_lat_forces(self, a_y: float) -> tuple:
         """Lateral acceleration input in m/s^2. Output forces in N."""
@@ -290,13 +293,13 @@ class Car(object):
             f_y_f, f_y_r = self.calc_lat_forces(a_y=a_y)
 
             # calculate tire force potentials (using a_x = 0.0 at maximum cornering)
-            f_x_pot_fl, f_y_pot_fl, _, \
-                f_x_pot_fr, f_y_pot_fr, _, \
-                f_x_pot_rl, f_y_pot_rl, _, \
-                f_x_pot_rr, f_y_pot_rr, _ = self.tire_force_pots(vel=vel_range[ind_mid],
-                                                                 a_x=0.0,  # at max. cornering there is no long. acc.
-                                                                 a_y=a_y,
-                                                                 mu=mu)
+            f_x_pot_fl, f_y_pot_fl, f_z_fl, \
+                f_x_pot_fr, f_y_pot_fr, f_z_fr, \
+                f_x_pot_rl, f_y_pot_rl, f_z_rl, \
+                f_x_pot_rr, f_y_pot_rr, f_z_rr = self.tire_force_pots(vel=vel_range[ind_mid],
+                                                                      a_x=0.0,
+                                                                      a_y=a_y,
+                                                                      mu=mu)
 
             # calculate remaining tire potential at the driven axle(s) for longitudinal force
             """Axis-wise consideration of the lateral force potential makes sense because it is better to assume that
@@ -318,7 +321,8 @@ class Car(object):
                                              force_use_all_wheels=False,
                                              limit_braking_weak_side=None)
 
-                f_x_drag = self.air_res(vel=vel_range[ind_mid], drs=False) + self.roll_res()
+                f_x_drag = (self.air_res(vel=vel_range[ind_mid], drs=False)
+                            + self.roll_res(f_z_tot=f_z_fl + f_z_fr + f_z_rl + f_z_rr))
 
                 if f_x_poss < f_x_drag:
                     potential_exceeded = True
@@ -351,7 +355,7 @@ class Car(object):
                      f_y_f: float,
                      f_y_r: float,
                      force_use_all_wheels: bool = False,
-                     limit_braking_weak_side: Union[None, str] = None) -> float:
+                     limit_braking_weak_side: None or str = None) -> float:
         """Calculate remaining tire potential for longitudinal force transmission considering driven axle(s). All forces
         in N. 'force_use_all_wheels' flag can be set to use this function also for braking with all four wheels.
         limit_braking_weak_side can be None, 'FA', 'RA', 'all'. This determines if the possible braking force should be

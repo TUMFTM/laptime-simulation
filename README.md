@@ -18,9 +18,14 @@ https://github.com/TUMFTM/global_racetrajectory_optimization. Please see the pap
 Use the provided `requirements.txt` in the root directory of this repo, in order to install all required modules.\
 `pip3 install -r /path/to/requirements.txt`
 
-The code is tested with Python 3.7.6 on Windows 10 and 3.6.8 on Ubuntu 18.04.
+The code is tested with Python 3.8.3 on Windows 10 and 3.6.8 on Ubuntu 18.04.
 
-# Solutions for possible execution problems (Ubuntu)
+### Solutions for possible installation problems (Windows)
+`cvxpy`, `cython` or any other package requires a `Visual C++ compiler` -> Download the build tools for Visual Studio
+2019 (https://visualstudio.microsoft.com/de/downloads/ -> tools for Visual Studio 2019 -> build tools), install them and
+chose the `C++ build tools` option to install the required C++ compiler and its dependencies
+
+### Solutions for possible installation problems (Ubuntu)
 1. `matplotlib` requires `tkinter` -> can be solved by `sudo apt install python3-tk`
 2. `Python.h` required `quadprog` -> can be solved by `sudo apt install python3-dev`
 
@@ -59,6 +64,9 @@ the exported raceline from the output folder to the according input folder of th
 smoothed centerline was saved in the output folder and can be used if required, e.g. for plotting purposes.
 
 ![Resulting raceline for the Berlin FE track](opt_raceline/opt_raceline_berlin.png)
+
+### Acknowledgement for the available race tracks
+The currently available tracks in the input folder were created by Andressa de Paula Suiti during her semester thesis.
 
 ### Detailed description of the curvature minimization used during the raceline optimization
 Please refer to our paper for further information:\
@@ -103,3 +111,8 @@ Please refer to our paper for further information:\
 Heilmeier, Geisslinger, Betz\
 A Quasi-Steady-State Lap Time Simulation for Electrified Race Cars\
 DOI: 10.1109/EVER.2019.8813646
+
+# Related open-source repositories
+* Race simulation: https://github.com/TUMFTM/race-simulation
+* Race track database: https://github.com/TUMFTM/racetrack-database
+* Formula 1 timing database: https://github.com/TUMFTM/f1-timing-database

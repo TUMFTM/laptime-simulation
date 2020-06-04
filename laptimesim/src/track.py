@@ -54,7 +54,7 @@ class Track(object):
         self.pars_track.update(pars_track_tmp[self.pars_track["trackname"]])
 
         # load raceline
-        self.raceline = np.loadtxt(trackfilepath, comments='#', delimiter=', ')
+        self.raceline = np.loadtxt(trackfilepath, comments='#', delimiter=',')
 
         # set friction values artificially as long as no real friction values available and limit them to a valid range
         self.mu = np.ones(self.raceline.shape[0]) * self.pars_track["mu_mean"] * self.pars_track["mu_weather"]

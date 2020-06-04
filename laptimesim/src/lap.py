@@ -441,8 +441,9 @@ class Lap(object):
                                  * self.driverobj.carobj.pars_gearbox["e_i"][self.gear_cl[i]]))
 
                 # calculate reached longitudinal acceleration
-                a_x = (f_x_powert - self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=self.trackobj.drs[i])
-                       - self.driverobj.carobj.roll_res()) / self.driverobj.carobj.pars_general["m"]
+                a_x = ((f_x_powert - self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=self.trackobj.drs[i])
+                       - self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[i]))))
+                       / self.driverobj.carobj.pars_general["m"])
 
                 # calculate velocity in the next point
                 self.vel_cl[i + 1] = math.sqrt(math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize)
@@ -457,7 +458,8 @@ class Lap(object):
                            - math.pow(self.vel_cl[i], 2)) / (2 * self.trackobj.stepsize)
 
                     f_x_target = (self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=False)
-                                  + self.driverobj.carobj.roll_res() + self.driverobj.carobj.pars_general["m"] * a_x)
+                                  + self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[i])))
+                                  + self.driverobj.carobj.pars_general["m"] * a_x)
 
                     # calculate torque distribution within the hybrid system (trying to reach the possible force f_x)
                     self.m_requ[i], self.m_eng[i], self.m_e_motor[i] = self.driverobj.carobj.\
@@ -568,8 +570,9 @@ class Lap(object):
                                          limit_braking_weak_side=self.pars_solver["limit_braking_weak_side"])
 
                         # calculate deceleration
-                        a_x = -(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
-                                + self.driverobj.carobj.roll_res()) / self.driverobj.carobj.pars_general["m"]
+                        a_x = (-(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
+                                 + self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(tire_loads_tmp))))
+                               / self.driverobj.carobj.pars_general["m"])
 
                         # calculate previous velocity (-a_x because we go backwards and therefore need a positive
                         # acceleration within the equation) and append it to vels_tmp
@@ -611,9 +614,18 @@ class Lap(object):
 
                 # recalculate energy related quantities starting from the last unchanged point i - j - 1
                 for k in range(i - j - 1, i):
-                    # calculate resistance force
-                    f_x_resi = (self.driverobj.carobj.air_res(vel=self.vel_cl[k], drs=False)
-                                + self.driverobj.carobj.roll_res())
+                    # calculate resistance force (in first point, DRS is set as it is prescribed by the track to avoid
+                    # a sudden rise of the drag resistance which cannot be overcome by the available powertrain torque
+                    # in some cases where the DRS was active in the forward loop, in all other points it is deactivated
+                    # to consider the maximal possible deceleration that was used to calculate the velocity profile also
+                    # in the energy calculations)
+                    if k == i - j - 1:
+                        drs_tmp = self.trackobj.drs[k]
+                    else:
+                        drs_tmp = False
+
+                    f_x_resi = (self.driverobj.carobj.air_res(vel=self.vel_cl[k], drs=drs_tmp)
+                                + self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[k]))))
 
                     # calculate the longitudinal acceleration and force required for the given velocities
                     a_x_requ = (math.pow(self.vel_cl[k + 1], 2)
@@ -723,6 +735,20 @@ class Lap(object):
         plt.grid()
         plt.show()
 
+    def plot_torques(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.trackobj.dists_cl[:-1], self.m_eng)
+        plt.plot(self.trackobj.dists_cl[:-1], self.m_e_motor)
+        plt.plot(self.trackobj.dists_cl[:-1], self.m_eng + self.m_e_motor)
+        plt.plot(self.trackobj.dists_cl[:-1], self.m_requ)
+        ax.set_title("Provided and requested (i.e. transmittable by the tires) torque")
+        ax.set_xlabel("distance s in m")
+        ax.set_ylabel("torque in Nm")
+        plt.legend(["combustion engine", "electric motor", "powertrain total", "requested"])
+        plt.grid()
+        plt.show()
+
     def plot_tire_loads(self):
         f_z_stat_avg = 0.25 * self.driverobj.carobj.pars_general["m"] * self.driverobj.carobj.pars_general["g"]
         if self.pars_solver["series"] == "F1":
@@ -774,6 +800,22 @@ class Lap(object):
         ax.set_ylabel("amplitude in N")
         plt.legend(["drag", "downforce", "valid downforce range"])
         plt.grid()
+        plt.show()
+
+    def plot_enginespeed_gears(self):
+        fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, sharex=True)
+        fig.suptitle("Engine speed and gear selection")
+
+        ax1.plot(self.trackobj.dists_cl[:-1], self.n_cl[:-1] * 60.0)
+        ax1.set_xlabel("distance s in m")
+        ax1.set_ylabel("engine speed in 1/min")
+        ax1.grid()
+
+        ax2.plot(self.trackobj.dists_cl[:-1], self.gear_cl[:-1])
+        ax2.set_xlabel("distance s in m")
+        ax2.set_ylabel("gear in -")
+        ax2.grid()
+
         plt.show()
 
     def plot_overview(self):

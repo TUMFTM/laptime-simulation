@@ -1,5 +1,5 @@
 numpy==1.18.1
-matplotlib==3.0.3
-trajectory_planning_helpers==0.64
+matplotlib==3.2.1
+trajectory_planning_helpers==0.66
 utm==0.5.0
-pytest==5.3.5
+pytest==5.4.3

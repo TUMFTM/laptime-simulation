@@ -3,7 +3,6 @@ import math
 import matplotlib.pyplot as plt
 import json
 from laptimesim.src.car import Car
-from typing import Union
 import configparser
 
 
@@ -88,7 +87,7 @@ class CarHybrid(Car):
     # METHODS (CALCULATIONS) -------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __power_engine(self, n: Union[float, np.ndarray]):
+    def __power_engine(self, n: float or np.ndarray):
         """
         Power curve is approximated by a peak power pow_max at n_max and equal drops on both sides at n_begin and n_end.
         Rev input is in 1/s, output is in W.

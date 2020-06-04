@@ -1,0 +1,1256 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2020-01-16T22:57:01Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/4906929",
+        "alt_name": "Hawthorn Bend",
+        "highway": "raceway",
+        "name": "Hawthorns Bend",
+        "oneway": "yes",
+        "short_name": "Hawthorns",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2674015,
+            51.3558795
+          ],
+          [
+            0.2676187,
+            51.3558027
+          ],
+          [
+            0.2677781,
+            51.3557305
+          ],
+          [
+            0.2679913,
+            51.3556068
+          ],
+          [
+            0.2681714,
+            51.3554636
+          ],
+          [
+            0.2682787,
+            51.3553389
+          ],
+          [
+            0.268342,
+            51.3552066
+          ],
+          [
+            0.2683734,
+            51.3550678
+          ],
+          [
+            0.2683782,
+            51.3549385
+          ],
+          [
+            0.2683573,
+            51.3548299
+          ],
+          [
+            0.2682871,
+            51.3546597
+          ]
+        ]
+      },
+      "id": "way/4906929"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/4906930",
+        "highway": "raceway",
+        "name": "Pit Lane",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2564068,
+            51.3580032
+          ],
+          [
+            0.2564675,
+            51.3581035
+          ],
+          [
+            0.2566687,
+            51.3583999
+          ],
+          [
+            0.2567786,
+            51.3585255
+          ],
+          [
+            0.2568874,
+            51.3586245
+          ],
+          [
+            0.2569967,
+            51.3587339
+          ],
+          [
+            0.2571211,
+            51.3587632
+          ],
+          [
+            0.2571631,
+            51.3587718
+          ],
+          [
+            0.2571934,
+            51.358778
+          ],
+          [
+            0.2572385,
+            51.3588062
+          ],
+          [
+            0.2572914,
+            51.3588601
+          ],
+          [
+            0.2573085,
+            51.3589941
+          ],
+          [
+            0.2573668,
+            51.3590758
+          ],
+          [
+            0.2576191,
+            51.359237
+          ],
+          [
+            0.257757,
+            51.359288
+          ],
+          [
+            0.2584641,
+            51.3595757
+          ],
+          [
+            0.2605146,
+            51.3602519
+          ],
+          [
+            0.2607802,
+            51.360271
+          ],
+          [
+            0.2616807,
+            51.3605912
+          ],
+          [
+            0.2619224,
+            51.3606628
+          ],
+          [
+            0.2621624,
+            51.3607494
+          ],
+          [
+            0.2624399,
+            51.3608168
+          ],
+          [
+            0.2626273,
+            51.3608386
+          ],
+          [
+            0.2629687,
+            51.3608904
+          ]
+        ]
+      },
+      "id": "way/4906930"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/4928103",
+        "highway": "raceway",
+        "name": "McLaren",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2583765,
+            51.3585048
+          ],
+          [
+            0.2583809,
+            51.3581649
+          ],
+          [
+            0.2583686,
+            51.3579971
+          ],
+          [
+            0.2583447,
+            51.3579224
+          ],
+          [
+            0.2582938,
+            51.3578314
+          ],
+          [
+            0.258234,
+            51.3577515
+          ],
+          [
+            0.2581221,
+            51.3576347
+          ],
+          [
+            0.257994,
+            51.3575207
+          ],
+          [
+            0.2578415,
+            51.3574115
+          ],
+          [
+            0.2576832,
+            51.3573254
+          ],
+          [
+            0.2575112,
+            51.3572641
+          ],
+          [
+            0.2573288,
+            51.3572403
+          ],
+          [
+            0.2571435,
+            51.357247
+          ]
+        ]
+      },
+      "id": "way/4928103"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804641",
+        "highway": "raceway",
+        "name": "Clark Curve",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2569347,
+            51.3573017
+          ],
+          [
+            0.2566958,
+            51.3574282
+          ],
+          [
+            0.256533,
+            51.3575971
+          ],
+          [
+            0.2564628,
+            51.3577358
+          ],
+          [
+            0.2564118,
+            51.3578942
+          ],
+          [
+            0.2564068,
+            51.3580032
+          ],
+          [
+            0.2565161,
+            51.3583473
+          ],
+          [
+            0.2566418,
+            51.3585749
+          ],
+          [
+            0.256891,
+            51.3588698
+          ],
+          [
+            0.2570766,
+            51.3590426
+          ],
+          [
+            0.2572875,
+            51.3591891
+          ],
+          [
+            0.2574679,
+            51.3592969
+          ]
+        ]
+      },
+      "id": "way/25804641"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804653",
+        "highway": "raceway",
+        "name": "Paddock Hill",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2632627,
+            51.3608969
+          ],
+          [
+            0.2634164,
+            51.3608919
+          ],
+          [
+            0.2635827,
+            51.36087
+          ],
+          [
+            0.2637746,
+            51.3608327
+          ],
+          [
+            0.2639381,
+            51.3607834
+          ],
+          [
+            0.264073,
+            51.3607133
+          ],
+          [
+            0.2642176,
+            51.360621
+          ],
+          [
+            0.2643041,
+            51.3605384
+          ],
+          [
+            0.2643798,
+            51.3604352
+          ],
+          [
+            0.2644815,
+            51.3602583
+          ],
+          [
+            0.2645233,
+            51.3601188
+          ],
+          [
+            0.2645701,
+            51.359901
+          ],
+          [
+            0.2646133,
+            51.359508
+          ]
+        ]
+      },
+      "id": "way/25804653"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804669",
+        "highway": "raceway",
+        "name": "Druids Bend",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.264537,
+            51.3582117
+          ],
+          [
+            0.2644695,
+            51.3581016
+          ],
+          [
+            0.2643742,
+            51.358019
+          ],
+          [
+            0.2642096,
+            51.357965
+          ],
+          [
+            0.264047,
+            51.3579463
+          ],
+          [
+            0.2638742,
+            51.3579707
+          ],
+          [
+            0.2637079,
+            51.358045
+          ],
+          [
+            0.2636108,
+            51.3581426
+          ],
+          [
+            0.2635667,
+            51.3582598
+          ],
+          [
+            0.2635553,
+            51.3584514
+          ]
+        ]
+      },
+      "id": "way/25804669"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804824",
+        "highway": "raceway",
+        "name": "Cooper Straight",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2625425,
+            51.3599971
+          ],
+          [
+            0.261794,
+            51.3598721
+          ],
+          [
+            0.2611873,
+            51.3597684
+          ],
+          [
+            0.260939,
+            51.3597231
+          ],
+          [
+            0.2607462,
+            51.3596741
+          ],
+          [
+            0.2601756,
+            51.3594977
+          ],
+          [
+            0.2593024,
+            51.3592023
+          ],
+          [
+            0.2589378,
+            51.3590615
+          ]
+        ]
+      },
+      "id": "way/25804824"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804846",
+        "highway": "raceway",
+        "name": "Graham Hill Bend",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2634629,
+            51.3593244
+          ],
+          [
+            0.2633472,
+            51.3595173
+          ],
+          [
+            0.2632732,
+            51.3596347
+          ],
+          [
+            0.2631995,
+            51.3597479
+          ],
+          [
+            0.2631039,
+            51.3598714
+          ],
+          [
+            0.2630088,
+            51.3599395
+          ],
+          [
+            0.2628778,
+            51.3599879
+          ],
+          [
+            0.2627335,
+            51.3600099
+          ],
+          [
+            0.2625425,
+            51.3599971
+          ]
+        ]
+      },
+      "id": "way/25804846"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804875",
+        "highway": "raceway",
+        "name": "Surtees",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2589378,
+            51.3590615
+          ],
+          [
+            0.2587386,
+            51.3589619
+          ],
+          [
+            0.2585884,
+            51.3588479
+          ],
+          [
+            0.2584739,
+            51.3587249
+          ],
+          [
+            0.2584111,
+            51.3586214
+          ],
+          [
+            0.2583765,
+            51.3585048
+          ],
+          [
+            0.2584425,
+            51.3582608
+          ],
+          [
+            0.2585074,
+            51.3582007
+          ],
+          [
+            0.2586197,
+            51.3581312
+          ],
+          [
+            0.2587236,
+            51.3580791
+          ]
+        ]
+      },
+      "id": "way/25804875"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804935",
+        "highway": "raceway",
+        "name": "Pilgrims Drop",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2590346,
+            51.3579944
+          ],
+          [
+            0.2601226,
+            51.357833
+          ],
+          [
+            0.2612611,
+            51.3576672
+          ],
+          [
+            0.2616359,
+            51.3576048
+          ],
+          [
+            0.2618185,
+            51.3575668
+          ],
+          [
+            0.2619692,
+            51.3575271
+          ],
+          [
+            0.2624296,
+            51.3573888
+          ]
+        ]
+      },
+      "id": "way/25804935"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804993",
+        "highway": "raceway",
+        "name": "Derek Minter Straight",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2682871,
+            51.3546597
+          ],
+          [
+            0.2680613,
+            51.35427
+          ],
+          [
+            0.2677058,
+            51.353656
+          ],
+          [
+            0.2672405,
+            51.3528795
+          ]
+        ]
+      },
+      "id": "way/25804993"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25804999",
+        "alt_name": "Westfield",
+        "highway": "raceway",
+        "name": "Westfield Bend",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2672405,
+            51.3528795
+          ],
+          [
+            0.2671721,
+            51.3527907
+          ],
+          [
+            0.2671115,
+            51.352728
+          ],
+          [
+            0.2670085,
+            51.3526709
+          ],
+          [
+            0.2669234,
+            51.3526389
+          ],
+          [
+            0.2667976,
+            51.3526184
+          ],
+          [
+            0.2663958,
+            51.3525849
+          ],
+          [
+            0.2660449,
+            51.3525551
+          ],
+          [
+            0.2656017,
+            51.3525163
+          ]
+        ]
+      },
+      "id": "way/25804999"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25805012",
+        "highway": "raceway",
+        "name": "Brabham Straight",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2578621,
+            51.3594864
+          ],
+          [
+            0.2581995,
+            51.3596211
+          ],
+          [
+            0.2586088,
+            51.3597648
+          ],
+          [
+            0.2590724,
+            51.359918
+          ],
+          [
+            0.2601254,
+            51.3602331
+          ],
+          [
+            0.2603721,
+            51.3603119
+          ],
+          [
+            0.2613878,
+            51.3606077
+          ],
+          [
+            0.2617061,
+            51.3606959
+          ],
+          [
+            0.2621889,
+            51.360807
+          ],
+          [
+            0.2626207,
+            51.3608729
+          ],
+          [
+            0.2629687,
+            51.3608904
+          ],
+          [
+            0.2632627,
+            51.3608969
+          ]
+        ]
+      },
+      "id": "way/25805012"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25805047",
+        "highway": "raceway",
+        "name": "Dingle Dell",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2656017,
+            51.3525163
+          ],
+          [
+            0.265331,
+            51.3525132
+          ],
+          [
+            0.2651837,
+            51.3525258
+          ],
+          [
+            0.2647492,
+            51.3526181
+          ],
+          [
+            0.2640643,
+            51.3527706
+          ]
+        ]
+      },
+      "id": "way/25805047"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25805049",
+        "highway": "raceway",
+        "name": "Sheene Curve",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.262208,
+            51.3536766
+          ],
+          [
+            0.2621119,
+            51.3537597
+          ],
+          [
+            0.2620879,
+            51.3538332
+          ],
+          [
+            0.2620957,
+            51.353926
+          ],
+          [
+            0.2621093,
+            51.3542716
+          ],
+          [
+            0.2621327,
+            51.3543901
+          ],
+          [
+            0.2622224,
+            51.3546211
+          ]
+        ]
+      },
+      "id": "way/25805049"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/25805072",
+        "alt_name": "Stirlings",
+        "highway": "raceway",
+        "name": "Stirlings Bend",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.262535,
+            51.3554666
+          ],
+          [
+            0.2626196,
+            51.3556811
+          ],
+          [
+            0.2626215,
+            51.3557978
+          ],
+          [
+            0.2625891,
+            51.3558852
+          ],
+          [
+            0.2625215,
+            51.3559717
+          ],
+          [
+            0.2624106,
+            51.3560403
+          ],
+          [
+            0.2623133,
+            51.3560815
+          ],
+          [
+            0.2620688,
+            51.3561399
+          ]
+        ]
+      },
+      "id": "way/25805072"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570161",
+        "highway": "raceway",
+        "name": "Hailwoods Hill",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2646133,
+            51.359508
+          ],
+          [
+            0.2646267,
+            51.3592993
+          ],
+          [
+            0.2645892,
+            51.3587818
+          ],
+          [
+            0.2645516,
+            51.3583346
+          ],
+          [
+            0.264537,
+            51.3582117
+          ]
+        ]
+      },
+      "id": "way/171570161"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570162",
+        "highway": "raceway",
+        "name": "Hawthorn Hill",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2624296,
+            51.3573888
+          ],
+          [
+            0.2641319,
+            51.3568694
+          ],
+          [
+            0.2648573,
+            51.3566548
+          ],
+          [
+            0.2659759,
+            51.3563163
+          ],
+          [
+            0.2664922,
+            51.3561609
+          ],
+          [
+            0.2674015,
+            51.3558795
+          ]
+        ]
+      },
+      "id": "way/171570162"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570163",
+        "highway": "raceway",
+        "name": "Dingle Dell Corner",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2640643,
+            51.3527706
+          ],
+          [
+            0.2637874,
+            51.3528293
+          ],
+          [
+            0.263486,
+            51.3529113
+          ],
+          [
+            0.2632721,
+            51.3529936
+          ],
+          [
+            0.2630552,
+            51.353096
+          ],
+          [
+            0.2628562,
+            51.3532137
+          ],
+          [
+            0.2626757,
+            51.3533399
+          ],
+          [
+            0.262208,
+            51.3536766
+          ]
+        ]
+      },
+      "id": "way/171570163"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570164",
+        "highway": "raceway",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2587236,
+            51.3580791
+          ],
+          [
+            0.2588633,
+            51.358031
+          ],
+          [
+            0.2590346,
+            51.3579944
+          ]
+        ]
+      },
+      "id": "way/171570164"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570165",
+        "highway": "raceway",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2622224,
+            51.3546211
+          ],
+          [
+            0.2623898,
+            51.3550986
+          ],
+          [
+            0.262535,
+            51.3554666
+          ]
+        ]
+      },
+      "id": "way/171570165"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570166",
+        "highway": "raceway",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2574679,
+            51.3592969
+          ],
+          [
+            0.2578621,
+            51.3594864
+          ]
+        ]
+      },
+      "id": "way/171570166"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570167",
+        "highway": "raceway",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2635553,
+            51.3584514
+          ],
+          [
+            0.2635351,
+            51.3588723
+          ],
+          [
+            0.2635136,
+            51.3591838
+          ],
+          [
+            0.2634629,
+            51.3593244
+          ]
+        ]
+      },
+      "id": "way/171570167"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570251",
+        "highway": "raceway",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.2620688,
+            51.3561399
+          ],
+          [
+            0.2613357,
+            51.3563079
+          ],
+          [
+            0.259847,
+            51.3566396
+          ],
+          [
+            0.258341,
+            51.3569783
+          ]
+        ]
+      },
+      "id": "way/171570251"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/171570252",
+        "highway": "raceway",
+        "name": "Clearways",
+        "oneway": "yes",
+        "source": "Bing",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0.258341,
+            51.3569783
+          ],
+          [
+            0.2571435,
+            51.357247
+          ],
+          [
+            0.2569347,
+            51.3573017
+          ]
+        ]
+      },
+      "id": "way/171570252"
+    }
+  ]
+}

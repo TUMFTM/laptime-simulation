@@ -1,0 +1,798 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2020-02-03T20:41:02Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/769438525",
+        "highway": "raceway",
+        "sport": "motor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1277848,
+            49.4308871
+          ],
+          [
+            11.1277692,
+            49.4309808
+          ],
+          [
+            11.127672,
+            49.4310744
+          ]
+        ]
+      },
+      "id": "way/769438525"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/769438526",
+        "highway": "raceway",
+        "sport": "motor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.127672,
+            49.4310744
+          ],
+          [
+            11.1229981,
+            49.4329581
+          ],
+          [
+            11.1224211,
+            49.4332802
+          ],
+          [
+            11.1211381,
+            49.4344465
+          ]
+        ]
+      },
+      "id": "way/769438526"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/769438527",
+        "highway": "raceway",
+        "sport": "motor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1211381,
+            49.4344465
+          ],
+          [
+            11.1209289,
+            49.4344235
+          ],
+          [
+            11.121598,
+            49.4327229
+          ],
+          [
+            11.1217859,
+            49.4324768
+          ],
+          [
+            11.1221771,
+            49.4321624
+          ]
+        ]
+      },
+      "id": "way/769438527"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/769438528",
+        "highway": "raceway",
+        "sport": "motor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1271584,
+            49.4301134
+          ],
+          [
+            11.1274389,
+            49.4299374
+          ],
+          [
+            11.1294378,
+            49.4291338
+          ],
+          [
+            11.1305728,
+            49.4284712
+          ],
+          [
+            11.131185,
+            49.4279992
+          ]
+        ]
+      },
+      "id": "way/769438528"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23104475",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1284375,
+            49.4298386
+          ],
+          [
+            11.1277114,
+            49.4301323
+          ],
+          [
+            11.1274757,
+            49.4302322
+          ],
+          [
+            11.1272584,
+            49.4303445
+          ]
+        ]
+      },
+      "id": "way/23104475"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/37437741",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1272584,
+            49.4303445
+          ],
+          [
+            11.1277848,
+            49.4308871
+          ]
+        ]
+      },
+      "id": "way/37437741"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/139933006",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1271584,
+            49.4301134
+          ],
+          [
+            11.1272958,
+            49.4299861
+          ],
+          [
+            11.1274545,
+            49.4298896
+          ],
+          [
+            11.1281861,
+            49.4296101
+          ]
+        ]
+      },
+      "id": "way/139933006"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/139933007",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1246408,
+            49.4311744
+          ],
+          [
+            11.1268561,
+            49.4302202
+          ],
+          [
+            11.1271584,
+            49.4301134
+          ]
+        ]
+      },
+      "id": "way/139933007"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23104476",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1288297,
+            49.429675
+          ],
+          [
+            11.1284375,
+            49.4298386
+          ]
+        ]
+      },
+      "id": "way/23104476"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23104478",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1281861,
+            49.4296101
+          ],
+          [
+            11.1285846,
+            49.4294419
+          ]
+        ]
+      },
+      "id": "way/23104478"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23104479",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1285846,
+            49.4294419
+          ],
+          [
+            11.1291607,
+            49.4292024
+          ],
+          [
+            11.1292665,
+            49.4291529
+          ],
+          [
+            11.1297507,
+            49.4289264
+          ],
+          [
+            11.1305728,
+            49.4284712
+          ],
+          [
+            11.1306043,
+            49.4284538
+          ],
+          [
+            11.131185,
+            49.4279992
+          ]
+        ]
+      },
+      "id": "way/23104479"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/23104480",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.131185,
+            49.4279992
+          ],
+          [
+            11.1313268,
+            49.4279731
+          ],
+          [
+            11.1314276,
+            49.4279902
+          ],
+          [
+            11.1315229,
+            49.4280448
+          ],
+          [
+            11.1315513,
+            49.4280989
+          ],
+          [
+            11.1315381,
+            49.4281796
+          ]
+        ]
+      },
+      "id": "way/23104480"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/105838900",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1315381,
+            49.4281796
+          ],
+          [
+            11.1309233,
+            49.4286384
+          ],
+          [
+            11.1300273,
+            49.4291592
+          ],
+          [
+            11.1298367,
+            49.4292486
+          ],
+          [
+            11.1295768,
+            49.4293602
+          ],
+          [
+            11.1290392,
+            49.4295912
+          ],
+          [
+            11.1288297,
+            49.429675
+          ]
+        ]
+      },
+      "id": "way/105838900"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/129581802",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1211381,
+            49.4344465
+          ],
+          [
+            11.1209888,
+            49.4344494
+          ]
+        ]
+      },
+      "id": "way/129581802"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/58992298",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1277906,
+            49.4310166
+          ],
+          [
+            11.1279028,
+            49.4309392
+          ]
+        ]
+      },
+      "id": "way/58992298"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/128678329",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1221771,
+            49.4321624
+          ],
+          [
+            11.1223557,
+            49.4320829
+          ],
+          [
+            11.1246408,
+            49.4311744
+          ]
+        ]
+      },
+      "id": "way/128678329"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/769440278",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1277848,
+            49.4308871
+          ],
+          [
+            11.1279028,
+            49.4309392
+          ]
+        ]
+      },
+      "id": "way/769440278"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/59273473",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1277906,
+            49.4310166
+          ],
+          [
+            11.127704,
+            49.431109
+          ],
+          [
+            11.1262466,
+            49.4317278
+          ],
+          [
+            11.1231247,
+            49.4329528
+          ],
+          [
+            11.1227555,
+            49.4331468
+          ],
+          [
+            11.1224646,
+            49.4333264
+          ],
+          [
+            11.1222688,
+            49.4334976
+          ],
+          [
+            11.1219515,
+            49.4338033
+          ],
+          [
+            11.121567,
+            49.4341578
+          ],
+          [
+            11.1213062,
+            49.4343481
+          ],
+          [
+            11.1211381,
+            49.4344465
+          ]
+        ]
+      },
+      "id": "way/59273473"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/139931045",
+        "@relations": [
+          {
+            "role": "",
+            "rel": 1889538,
+            "reltags": {
+              "highway": "raceway",
+              "name": "Norisring",
+              "type": "circuit",
+              "website": "https://norisring.de/",
+              "wikidata": "Q702903",
+              "wikipedia": "de:Norisring"
+            }
+          }
+        ]
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            11.1209888,
+            49.4344494
+          ],
+          [
+            11.1209289,
+            49.4344235
+          ],
+          [
+            11.1208953,
+            49.4343667
+          ],
+          [
+            11.120903,
+            49.4342295
+          ],
+          [
+            11.1209463,
+            49.4340461
+          ],
+          [
+            11.1210236,
+            49.4338004
+          ],
+          [
+            11.1212071,
+            49.4333614
+          ],
+          [
+            11.1214544,
+            49.432738
+          ],
+          [
+            11.1215949,
+            49.4325272
+          ],
+          [
+            11.1217234,
+            49.4323892
+          ],
+          [
+            11.1219206,
+            49.4322818
+          ],
+          [
+            11.1221771,
+            49.4321624
+          ]
+        ]
+      },
+      "id": "way/139931045"
+    }
+  ]
+}

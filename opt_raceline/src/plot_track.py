@@ -5,7 +5,8 @@ import trajectory_planning_helpers as tph
 
 def plot_track(track_imp: np.ndarray,
                track_interp: np.ndarray,
-               mapfilepath: str = "") -> None:
+               mapfilepath: str = "",
+               filepath_tr_plot: str = "") -> None:
     """
     author:
     Alexander Heilmeier
@@ -17,12 +18,14 @@ def plot_track(track_imp: np.ndarray,
     This function is used to plot the imported as well as the smoothed track.
 
     .. inputs::
-    :param track_imp:       imported track containing four columns [x_m, y_m, w_tr_right_m, w_tr_left_m]
-    :type track_imp:        np.ndarray
-    :param track_interp:    interpolated/smoothed track containing four columns [x_m, y_m, w_tr_right_m, w_tr_left_m]
-    :type track_interp:     np.ndarray
-    :param mapfilepath:     path to track map file (optional)
-    :type mapfilepath:      str
+    :param track_imp:           imported track containing four columns [x_m, y_m, w_tr_right_m, w_tr_left_m]
+    :type track_imp:            np.ndarray
+    :param track_interp:        interpolated/smoothed track with four columns [x_m, y_m, w_tr_right_m, w_tr_left_m]
+    :type track_interp:         np.ndarray
+    :param mapfilepath:         path to track map file (optional)
+    :type mapfilepath:          str
+    :param filepath_tr_plot:    path to save plot (*.png)
+    :type filepath_tr_plot:     str
     """
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -67,7 +70,7 @@ def plot_track(track_imp: np.ndarray,
     # ------------------------------------------------------------------------------------------------------------------
 
     # plot everything
-    fig = plt.figure()
+    fig = plt.figure(figsize=(12.0, 8.0))
     ax = fig.add_subplot(111)
 
     ax.plot(track_imp_cl[:, 0], track_imp_cl[:, 1], 'r--', label="centerline (imported)")
@@ -78,10 +81,16 @@ def plot_track(track_imp: np.ndarray,
     ax.plot(bound_right_interp_cl[:, 0], bound_right_interp_cl[:, 1], 'k-', label="right boundary (smoothed)")
     ax.plot(bound_left_interp_cl[:, 0], bound_left_interp_cl[:, 1], 'k-', label="left boundary (smoothed)")
 
+    point1_arrow = track_interp_cl[0, :2]
+    point2_arrow = track_interp_cl[10, :2]
+    vec_arrow = point2_arrow - point1_arrow
+    ax.arrow(point1_arrow[0], point1_arrow[1], vec_arrow[0], vec_arrow[1], head_width=50.0, head_length=50.0,
+             fc='g', ec='g', width=25.0)
+
     ax.legend()
     ax.set_aspect("equal", "datalim")
-    ax.set_xlabel("x in m")
-    ax.set_ylabel("y in m")
+    ax.set_xlabel("east in m")
+    ax.set_ylabel("north in m")
     plt.title("Comparison between imported and smoothed track")
     plt.grid()
 
@@ -95,6 +104,8 @@ def plot_track(track_imp: np.ndarray,
         img = plt.imread(mapfilepath)
         ax.imshow(img, zorder=0, extent=[x_min, x_max, y_min, y_max])  # [left, right, bottom, top]
 
+    if filepath_tr_plot:
+        plt.savefig(filepath_tr_plot, dpi=250)
     plt.show()
 
 

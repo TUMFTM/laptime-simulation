@@ -3,7 +3,6 @@ import math
 from laptimesim.src.car_hybrid import CarHybrid
 from laptimesim.src.car_electric import CarElectric
 from laptimesim.src.track import Track
-from typing import Union
 
 
 class Driver(object):
@@ -33,7 +32,7 @@ class Driver(object):
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, carobj: Union[CarHybrid, CarElectric], pars_driver: dict, trackobj: Track,
+    def __init__(self, carobj: CarHybrid or CarElectric, pars_driver: dict, trackobj: Track,
                  stepsize: float = 5.0):
         """stepsize must only be supplied for lift and coast strategy."""
 
@@ -75,8 +74,8 @@ class Driver(object):
     # GETTERS / SETTERS ------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __get_carobj(self) -> Union[CarHybrid, CarElectric]: return self.__carobj
-    def __set_carobj(self, x: Union[CarHybrid, CarElectric]) -> None: self.__carobj = x
+    def __get_carobj(self) -> CarHybrid or CarElectric: return self.__carobj
+    def __set_carobj(self, x: CarHybrid or CarElectric) -> None: self.__carobj = x
     carobj = property(__get_carobj, __set_carobj)
 
     def __get_pars_driver(self) -> dict: return self.__pars_driver
