@@ -107,10 +107,18 @@ located in `/laptimesim/input/vehicles`.
 ![Lap time simulation result for the Monza racetrack](laptimesim/laptimesim_monza.png)
 
 ### Detailed description of the lap time simulation
-Please refer to our paper for further information:\
-Heilmeier, Geisslinger, Betz\
-A Quasi-Steady-State Lap Time Simulation for Electrified Race Cars\
-DOI: 10.1109/EVER.2019.8813646
+Please refer to our paper for further information:
+```
+@inproceedings{Heilmeier2019,
+doi = {10.1109/ever.2019.8813646},
+url = {https://doi.org/10.1109/ever.2019.8813646},
+year = {2019},
+month = may,
+publisher = {{IEEE}},
+author = {Alexander Heilmeier and Maximilian Geisslinger and Johannes Betz},
+title = {A Quasi-Steady-State Lap Time Simulation for Electrified Race Cars},
+booktitle = {2019 Fourteenth International Conference on Ecological Vehicles and Renewable Energies ({EVER})}}
+```
 
 # Related open-source repositories
 * Race simulation: https://github.com/TUMFTM/race-simulation

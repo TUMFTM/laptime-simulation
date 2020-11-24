@@ -58,6 +58,10 @@ def main(track_pars: dict,
         print("WARNING: The track_width set within the user input section is ignored since the track widths are"
               " supplied within the .csv file!")
 
+    elif imp_opts["mode"] == "centerline" and track_pars["track_width"] is None:
+        raise ValueError("The track_width must be set within the user input section since it is not supplied within the"
+                         " .geojson file!")
+
     # ------------------------------------------------------------------------------------------------------------------
     # INITIALIZATION STUFF ---------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
