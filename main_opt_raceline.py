@@ -59,8 +59,8 @@ def main(track_pars: dict,
               " supplied within the .csv file!")
 
     elif imp_opts["mode"] == "centerline" and track_pars["track_width"] is None:
-        raise ValueError("The track_width must be set within the user input section since it is not supplied within the"
-                         " .geojson file!")
+        raise RuntimeError("The track_width must be set within the user input section since it is not supplied within"
+                           " the .geojson file!")
 
     # ------------------------------------------------------------------------------------------------------------------
     # INITIALIZATION STUFF ---------------------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ def main(track_pars: dict,
     elif imp_opts["mode"] == "track":
         trackfilepath = os.path.join(repo_path, 'opt_raceline', "input", "tracks", track_pars["location"] + ".csv")
     else:
-        raise ValueError("Unknown mode!")
+        raise RuntimeError("Unknown mode!")
 
     mapfolderpath = os.path.join(repo_path, 'opt_raceline', "input", "maps")
     mapfilepath = ""
@@ -120,7 +120,7 @@ def main(track_pars: dict,
         track_imp = opt_raceline.src.import_csv_track.import_csv_track(trackfilepath=trackfilepath)
 
     else:
-        raise ValueError("Unknown file type!")
+        raise RuntimeError("Unknown file type!")
 
     # ------------------------------------------------------------------------------------------------------------------
     # SCALE TRACK TO CORRECT LENGTH ------------------------------------------------------------------------------------

@@ -231,7 +231,7 @@ class Car(object):
             tire_circ_ref = 0.5 * (self.pars_tires["f"]["circ_ref"] + self.pars_tires["r"]["circ_ref"])
 
         else:
-            raise ValueError("Powertrain topology unknown!")
+            raise RuntimeError("Powertrain topology unknown!")
 
         return tire_circ_ref * (1 + (vel * 3.6 - 60.0) * (0.045 / 200.0))
 
@@ -381,7 +381,7 @@ class Car(object):
                 f_x_pot_f = 2 * min(f_x_pot_fl, f_x_pot_fr)
                 f_x_pot_r = 2 * min(f_x_pot_rl, f_x_pot_rr)
             else:
-                raise ValueError("Unknown option %s!" % limit_braking_weak_side)
+                raise RuntimeError("Unknown option %s!" % limit_braking_weak_side)
         else:
             f_x_pot_f = f_x_pot_fl + f_x_pot_fr
             f_x_pot_r = f_x_pot_rl + f_x_pot_rr
@@ -404,7 +404,7 @@ class Car(object):
             f_x_poss_f = 0.0
             f_x_poss_r = f_x_pot_r * math.pow(radicand_r, 1.0 / exp_tmp)
         else:
-            raise ValueError("Powertrain topology unknown!")
+            raise RuntimeError("Powertrain topology unknown!")
 
         return f_x_poss_f + f_x_poss_r
 

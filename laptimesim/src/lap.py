@@ -507,8 +507,8 @@ class Lap(object):
             else:
                 # check if start velocity is too high
                 if i == 1:
-                    raise ValueError("Reduce start velocity! (it could be that braking would affect points within the"
-                                     + " previous lap)")
+                    raise RuntimeError("Reduce start velocity! (it could be that braking would affect points within the"
+                                       + " previous lap)")
 
                 # get maximum current velocity depending on speed limit or lateral acceleration limit due to curvature
                 self.vel_cl[i] = min(self.driverobj.carobj.
@@ -596,9 +596,8 @@ class Lap(object):
                     j += 1
 
                     if i - j - 1 < 0:
-                        raise ValueError(
-                            "Reduce start velocity! (it could be that braking would affect points within the"
-                            + " previous lap)")
+                        raise RuntimeError("Reduce start velocity (it could be that braking would affect points within"
+                                           " the previous lap)!")
 
                 # ------------------------------------------------------------------------------------------------------
                 # MODIFIED VELOCITY PROFILE IS KNOWN -> RECALCULATION OF REMAINING DATA ON THIS BASIS ------------------

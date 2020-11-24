@@ -34,7 +34,7 @@ class CarHybrid(Car):
         parser = configparser.ConfigParser()
 
         if not parser.read(parfilepath):
-            raise ValueError('Specified config file does not exist or is empty!')
+            raise RuntimeError('Specified config file does not exist or is empty!')
 
         pars_veh_tmp = json.loads(parser.get('VEH_PARS', 'veh_pars'))
 

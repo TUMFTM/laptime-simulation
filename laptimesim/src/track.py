@@ -47,7 +47,7 @@ class Track(object):
         parser = configparser.ConfigParser()
 
         if not parser.read(parfilepath):
-            raise ValueError('Specified config file does not exist or is empty!')
+            raise RuntimeError('Specified config file does not exist or is empty!')
 
         pars_track_tmp = json.loads(parser.get('TRACK_PARS', 'track_pars'))
 
