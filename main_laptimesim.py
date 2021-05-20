@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pkg_resources
 import pickle
+import csv
 
 """
 author:
@@ -202,8 +203,8 @@ def main(track_opts: dict,
 
         # create parameter ranges
         sa_range_1 = np.linspace(sa_opts["range_1"][0], sa_opts["range_1"][1], sa_opts["range_1"][2])
-        # if sa_opts["range_2"] is not None:
-        #     sa_range_2 = np.linspace(sa_opts["range_2"][0], sa_opts["range_2"][1], sa_opts["range_2"][2])
+        if sa_opts["range_2"] is not None:
+             sa_range_2 = np.linspace(sa_opts["range_2"][0], sa_opts["range_2"][1], sa_opts["range_2"][2])
 
         # perform analysis
         if sa_opts["sa_type"] == "mass":
@@ -220,16 +221,96 @@ def main(track_opts: dict,
                 lap.simulate_lap()
                 sa_t_lap[i] = lap.t_cl[-1]
                 sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                if solver_opts["series"] == "FE":
+                    sa_fuel_cons[i] = lap.e_cons_cl[-1] # RMH
 
                 # reset lap
                 lap.reset_lap()
 
                 print("SA: Finished solver run (%i)" % (i + 1))
 
-        else:
-            sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
-            # TODO: implementation of COG and aero variation missing
+        # perform eLemons analysis
+        elif sa_opts["sa_type"] == "elemons-mass":
+            # initialize this pass variables
+            sa_t_lap = np.zeros(sa_opts["range_1"][2])
+            sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
 
+        
+            with open('eggs.csv', 'w') as csvfile:
+                spamwriter = csv.writer(csvfile )
+                spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
+
+            for i, cur_mass in enumerate(sa_range_1):
+                print("SA: Starting solver run (%i)" % (i + 1))
+
+                # change mass of vehicle
+                lap.driverobj.carobj.pars_general["m"] = cur_mass
+
+                # simulate lap and save lap time
+                lap.simulate_lap()
+                sa_t_lap[i] = lap.t_cl[-1]
+                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                if solver_opts["series"] == "FE":
+                    # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
+                    sa_fuel_cons[i] = lap.e_cons_cl[-1] 
+
+                # record the lap data
+                with open('eggs.csv', 'a') as csvfile:
+                    spamwriter = csv.writer(csvfile )
+                    spamwriter.writerow( [solver_opts["vehicle"]] +
+                                        ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
+                                        [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
+                                        [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
+                                        [("%.3f" %  lap.t_cl[-1])] +
+                                        [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
+                # reset lap
+                lap.reset_lap()
+
+                print("SA: Finished solver run (%i)" % (i + 1))
+
+        # perform eLemons analysis
+        elif sa_opts["sa_type"] == "elemons-mass-cd":
+            # initialize this pass variables that collect results
+            sa_t_lap = np.zeros(sa_opts["range_1"][2])
+            sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
+
+            # open a fresh file to accumulate results
+            with open('eggs.csv', 'w') as csvfile:
+                spamwriter = csv.writer(csvfile )
+                spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
+
+            for j, cur_cd in enumerate(sa_range_2):
+                # change coeff of drag of vehicle
+                lap.driverobj.carobj.pars_general["c_w_a"] = cur_cd
+
+                for i, cur_mass in enumerate(sa_range_1):
+                    print("\nSA: Starting solver run (%i)" % ((j*sa_opts["range_1"][2]) + (i + 1)))
+
+                    # change mass of vehicle
+                    lap.driverobj.carobj.pars_general["m"] = cur_mass
+
+                    # simulate lap and save lap time
+                    lap.simulate_lap()
+                    sa_t_lap[i] = lap.t_cl[-1]
+                    sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                    if solver_opts["series"] == "FE":
+                        # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
+                        sa_fuel_cons[i] = lap.e_cons_cl[-1] 
+
+                    # record the lap data
+                    with open('eggs.csv', 'a') as csvfile:
+                        spamwriter = csv.writer(csvfile )
+                        spamwriter.writerow( [solver_opts["vehicle"]] +
+                                            ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
+                                            [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
+                                            [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
+                                            [("%.3f" %  lap.t_cl[-1])] +
+                                            [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
+                    # reset lap
+                    lap.reset_lap()
+        #else:
+            # sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
+            # TODO: implementation of COG and aero variation missing
     # ------------------------------------------------------------------------------------------------------------------
     # EXPORT -----------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -275,9 +356,27 @@ def main(track_opts: dict,
         else:
             pass
             # TODO: implementation of COG and aero variation missing
-
+    if debug_opts["use_elemons_result"]: 
+        #print("elemons results")
+        #print("#VehicleName, mass_kg, laptime_s, perLapEnergyConsumption_kj")
+        #print("VehicleName:  {} ".format( solver_opts["vehicle"]))
+        #print("use_recuperation:  {} ".format( lap.driverobj.pars_driver["use_recuperation"]))
+        #print("mass:  %.1f kg" %  lap.driverobj.carobj.pars_general["m"])
+        #print("Lap time: %.3f s, Consumption: %.2f kJ/lap" %( lap.t_cl[-1], lap.e_cons_cl[-1] / 1000.0))
+        
+        with open('eggs.csv', 'a') as csvfile:
+            spamwriter = csv.writer(csvfile )
+            spamwriter.writerow( [solver_opts["vehicle"]] +
+                                 [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +
+                                 ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
+                                 [("%.3f" %  lap.t_cl[-1])] +
+                                 [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
+        
     # write velocity profile output
-    output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
+    #output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
+    output_path = os.path.join(output_path_velprofile, "velprofile_" + 
+                               track_opts["trackname"].lower() + "_" +
+                               solver_opts["vehicle"].lower() + ".csv")
 
     tmp_data = np.column_stack((lap.trackobj.dists_cl[:-1], lap.vel_cl[:-1]))
 
@@ -377,8 +476,8 @@ if __name__ == '__main__':
     # max_no_em_iters:          maximum number of iterations for EM recalculation
     # es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
 
-    solver_opts_ = {"vehicle": "F1_Shanghai.ini",
-                    "series": "F1",
+    solver_opts_ = {"vehicle": "FE_Berlin.ini",
+                    "series": "FE",
                     "limit_braking_weak_side": 'FA',
                     "v_start": 100.0 / 3.6,
                     "find_v_start": True,
@@ -409,20 +508,35 @@ if __name__ == '__main__':
                     "yellow_throttle": 0.3,
                     "initial_energy": 4.58e6,
                     "em_strategy": "FCFB",
-                    "use_recuperation": True,
+                    "use_recuperation": False,
                     "use_lift_coast": False,
                     "lift_coast_dist": 10.0}
 
     # sensitivity analysis options -------------------------------------------------------------------------------------
     # use_sa:   switch to deactivate sensitivity analysis
-    # sa_type:  'mass', 'aero', 'cog'
+    # sa_type:  'mass', 'aero', 'cog' 'elemons-mass'
     # range_1:  range of parameter variation [start, end, number of steps]
     # range_2:  range of parameter variation [start, end, number of steps] -> CURRENTLY NOT IMPLEMENTED
+    # RMH Note:
+    #  sa_type          Range 1 variable     Range 2 variable
+    # 'mass'            vehicle mass         not used - set to 'None' without quotes
+    # 'areo'            feature not implement 
+    # 'cog'             feature not implement 
+    # 'elemons-mass'    vehicle mass         not used - set to 'None' without quotes 
+    # 'elemons-mass-cd' vehicle mass         Cd c_w_a (coefficient of drag)
 
+    '''
+    # Original TUM settings 
     sa_opts_ = {"use_sa": False,
                 "sa_type": "mass",
                 "range_1": [733.0, 833.0, 5],
                 "range_2": None}
+    '''
+    # eLemons modifications to allow iteration over ranges of our interest
+    sa_opts_ = {"use_sa": True,
+                "sa_type": "elemons-mass-cd",
+                "range_1": [700.0, 1200.0, 10],
+                "range_2": [1.10, 1.50, 5]}
 
     # debug options ----------------------------------------------------------------------------------------------------
     # use_plot:                 plot results
@@ -430,12 +544,14 @@ if __name__ == '__main__':
     # use_plot_comparison_tph:  calculate velocity profile with TPH FB solver and plot a comparison
     # use_print:                set if prints to console should be used or not (does not suppress hints/warnings)
     # use_print_result:         set if result should be printed to console or not
+    # use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
 
-    debug_opts_ = {"use_plot": False,
+    debug_opts_ = {"use_plot": True,
                    "use_debug_plots": False,
-                   "use_plot_comparison_tph": False,
+                   "use_plot_comparison_tph": True,
                    "use_print": True,
-                   "use_print_result": True}
+                   "use_print_result": True,
+                   "use_elemons_result": False}
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
