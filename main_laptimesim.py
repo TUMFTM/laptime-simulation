@@ -9,6 +9,8 @@ import pickle
 import csv
 from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
+import configparser
+import json
 
 """
 author:
@@ -590,11 +592,22 @@ if __name__ == '__main__':
                 "range_1": [733.0, 833.0, 5],
                 "range_2": None}
     '''
+    '''
     # eLemons modifications to allow iteration over ranges of our interest
     sa_opts_ = {"use_sa": True,
                 "sa_type": "elemons_mass_cd",
                 "range_1": [700.0, 1200.0, 5],
                 "range_2": [1.10, 1.50, 5]}
+    '''
+    # Importing sa_opts from .ini file included in directory
+    config = configparser.ConfigParser()
+    config.read("sa_opts.ini")
+    
+    sa_opts_ = {"use_sa": config['SA_OPTS']['use_sa'] == 'True',
+                "sa_type": config['SA_OPTS']['sa_type'],
+                "range_1": json.loads(config['SA_OPTS']['range_1']),
+                "range_2": json.loads(config['SA_OPTS']['range_2'])}
+    print(sa_opts_)
 
     # debug options ----------------------------------------------------------------------------------------------------
     # use_plot:                 plot results
