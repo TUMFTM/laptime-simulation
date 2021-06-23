@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import pkg_resources
 import pickle
 import csv
+from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
 
 """
 author:
@@ -283,7 +285,6 @@ def main(track_opts: dict,
             # open a fresh file to accumulate results
            
             with open(resultsfile, 'w') as csvfile:
-                #spamwriter = csv.writer(csvfile )
                 spamwriter = csv.writer(csvfile)
                 spamwriter.writerow(results_header)
             iter = 0
@@ -367,19 +368,6 @@ def main(track_opts: dict,
         #print("use_recuperation:  {} ".format( lap.driverobj.pars_driver["use_recuperation"]))
         #print("mass:  %.1f kg" %  lap.driverobj.carobj.pars_general["m"])
         #print("Lap time: %.3f s, Consumption: %.2f kJ/lap" %( lap.t_cl[-1], lap.e_cons_cl[-1] / 1000.0))
-        mass = []
-        c_d = []
-        laptime = []
-        energy = []
-        
-        filename = open(resultsfile, 'r')
-        file = csv.DictReader(filename)
-        for row in file:
-            mass.append(row['mass (kg)'])
-            c_d.append(row['Cd(c_w_a)'])
-            laptime.append(row['laptime (s)'])
-            energy.append(row['energy (kJ)'])
-        filename.close()
     # write velocity profile output
     #output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
@@ -424,7 +412,26 @@ def main(track_opts: dict,
             ax.set_ylabel("fuel consumption in kg/lap")
             plt.grid()
             plt.show()
+        elif sa_opts["sa_type"] == "elemons_mass_cd":
+            # get axes from csv lists
+            contour_data = pd.read_csv(resultsfile)
 
+            Energy_array = contour_data.pivot_table(index='mass (kg)', columns='Cd(c_w_a)', values = 'energy (kJ)').T.values
+            Laptime_array = contour_data.pivot_table(index='mass (kg)', columns='Cd(c_w_a)', values='laptime (s)').T.values
+
+            mass_unique = np.sort(contour_data['mass (kg)'].unique())
+            c_d_unique = np.sort(contour_data['Cd(c_w_a)'].unique())
+
+            mass_array, c_d_array = np.meshgrid(mass_unique, c_d_unique)
+
+            fig = plt.figure()
+            fig2 = plt.figure()
+            ax1 = fig.add_subplot(111,projection='3d')
+            ax2 = fig2.add_subplot(111,projection='3d')
+
+            ax1.plot_surface(mass_array, c_d_array, Energy_array)
+            ax2.plot_surface(mass_array, c_d_array, Laptime_array)
+            plt.show()
     # ------------------------------------------------------------------------------------------------------------------
     # CI TESTING -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
