@@ -1,5 +1,6 @@
 import laptimesim
 import time
+import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -193,6 +194,10 @@ def main(track_opts: dict,
             lap.plot_enginespeed_gears()
 
     else:
+        # output file 
+        date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+        resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}".format(date))
+
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
         if debug_opts["use_print"]:
@@ -236,7 +241,7 @@ def main(track_opts: dict,
             sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
 
         
-            with open('eggs.csv', 'w') as csvfile:
+            with open(resultsfile, 'w') as csvfile:
                 spamwriter = csv.writer(csvfile )
                 spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
 
@@ -255,7 +260,7 @@ def main(track_opts: dict,
                     sa_fuel_cons[i] = lap.e_cons_cl[-1] 
 
                 # record the lap data
-                with open('eggs.csv', 'a') as csvfile:
+                with open(resultsfile, 'a') as csvfile:
                     spamwriter = csv.writer(csvfile )
                     spamwriter.writerow( [solver_opts["vehicle"]] +
                                         ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
@@ -270,17 +275,18 @@ def main(track_opts: dict,
 
         # perform eLemons analysis
         elif sa_opts["sa_type"] == "elemons_mass_cd":
+            results_header = ['iteration', 'vehicle', 'mass (kg)', 'Cd(c_w_a)','laptime (s)', 'energy (kJ)']
             # initialize this pass variables that collect results
             sa_t_lap = np.zeros(sa_opts["range_1"][2])
             sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
 
             # open a fresh file to accumulate results
-            with open('eggs.csv', 'w') as csvfile:
+           
+            with open(resultsfile, 'w') as csvfile:
                 #spamwriter = csv.writer(csvfile )
-                spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC )
-                #spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
-                spamwriter.writerow( ['mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
-
+                spamwriter = csv.writer(csvfile)
+                spamwriter.writerow(results_header)
+            iter = 0
             for j, cur_cd in enumerate(sa_range_2):
                 # change coeff of drag of vehicle
                 lap.driverobj.carobj.pars_general["c_w_a"] = cur_cd
@@ -298,27 +304,17 @@ def main(track_opts: dict,
                     if solver_opts["series"] == "FE":
                         # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
                         sa_fuel_cons[i] = lap.e_cons_cl[-1] 
-
-                    # record the lap data
-                    with open('eggs.csv', 'a') as csvfile:
-                        #spamwriter = csv.writer(csvfile )
+                    iter += 1
+                    with open(resultsfile, 'a') as csvfile:
                         spamwriter = csv.writer(csvfile )
-                        spamwriter.writerow( [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
-                                            [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
-                                            [("%.3f" %  lap.t_cl[-1])] +
-                                            [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
-                        ''' deprecated write that included vehicle name and recuperation
-                        spamwriter.writerow( [solver_opts["vehicle"]] +
-                                            ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
+                        spamwriter.writerow([iter] +
+                                            [solver_opts["vehicle"]] + 
                                             [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
                                             [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
                                             [("%.3f" %  lap.t_cl[-1])] +
                                             [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
-                        '''
                     lap.reset_lap()
-        #else:
-            # sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
-            # TODO: implementation of COG and aero variation missing
+    
     # ------------------------------------------------------------------------------------------------------------------
     # EXPORT -----------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -371,15 +367,19 @@ def main(track_opts: dict,
         #print("use_recuperation:  {} ".format( lap.driverobj.pars_driver["use_recuperation"]))
         #print("mass:  %.1f kg" %  lap.driverobj.carobj.pars_general["m"])
         #print("Lap time: %.3f s, Consumption: %.2f kJ/lap" %( lap.t_cl[-1], lap.e_cons_cl[-1] / 1000.0))
+        mass = []
+        c_d = []
+        laptime = []
+        energy = []
         
-        with open('eggs.csv', 'a') as csvfile:
-            spamwriter = csv.writer(csvfile )
-            spamwriter.writerow( [solver_opts["vehicle"]] +
-                                 [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +
-                                 ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
-                                 [("%.3f" %  lap.t_cl[-1])] +
-                                 [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
-        
+        filename = open(resultsfile, 'r')
+        file = csv.DictReader(filename)
+        for row in file:
+            mass.append(row['mass (kg)'])
+            c_d.append(row['Cd(c_w_a)'])
+            laptime.append(row['laptime (s)'])
+            energy.append(row['energy (kJ)'])
+        filename.close()
     # write velocity profile output
     #output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
@@ -399,7 +399,6 @@ def main(track_opts: dict,
         if debug_opts["use_plot"]:
             lap.plot_overview()
             # lap.plot_revs_gears()
-
     else:
         if sa_opts["sa_type"] == "mass":
             # lap time
@@ -559,7 +558,7 @@ if __name__ == '__main__':
                    "use_plot_comparison_tph": True,
                    "use_print": True,
                    "use_print_result": True,
-                   "use_elemons_result": False}
+                   "use_elemons_result": True}
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
