@@ -269,15 +269,17 @@ def main(track_opts: dict,
                 print("SA: Finished solver run (%i)" % (i + 1))
 
         # perform eLemons analysis
-        elif sa_opts["sa_type"] == "elemons-mass-cd":
+        elif sa_opts["sa_type"] == "elemons_mass_cd":
             # initialize this pass variables that collect results
             sa_t_lap = np.zeros(sa_opts["range_1"][2])
             sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
 
             # open a fresh file to accumulate results
             with open('eggs.csv', 'w') as csvfile:
-                spamwriter = csv.writer(csvfile )
-                spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
+                #spamwriter = csv.writer(csvfile )
+                spamwriter = csv.writer(csvfile, quoting=csv.QUOTE_NONNUMERIC )
+                #spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
+                spamwriter.writerow( ['mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
 
             for j, cur_cd in enumerate(sa_range_2):
                 # change coeff of drag of vehicle
@@ -299,14 +301,20 @@ def main(track_opts: dict,
 
                     # record the lap data
                     with open('eggs.csv', 'a') as csvfile:
+                        #spamwriter = csv.writer(csvfile )
                         spamwriter = csv.writer(csvfile )
+                        spamwriter.writerow( [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
+                                            [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
+                                            [("%.3f" %  lap.t_cl[-1])] +
+                                            [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
+                        ''' deprecated write that included vehicle name and recuperation
                         spamwriter.writerow( [solver_opts["vehicle"]] +
                                             ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
                                             [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
                                             [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
                                             [("%.3f" %  lap.t_cl[-1])] +
                                             [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
-                    # reset lap
+                        '''
                     lap.reset_lap()
         #else:
             # sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
@@ -457,7 +465,7 @@ if __name__ == '__main__':
     # use_drs2:             DRS zone 2 switch
     # use_pit:              activate pit stop (requires _pit track file!)
 
-    track_opts_ = {"trackname": "Shanghai",
+    track_opts_ = {"trackname": "HighPlainsFullTrack",
                    "flip_track": False,
                    "mu_weather": 1.0,
                    "interp_stepsize_des": 5.0,
@@ -534,7 +542,7 @@ if __name__ == '__main__':
     '''
     # eLemons modifications to allow iteration over ranges of our interest
     sa_opts_ = {"use_sa": True,
-                "sa_type": "elemons-mass-cd",
+                "sa_type": "elemons_mass_cd",
                 "range_1": [700.0, 1200.0, 10],
                 "range_2": [1.10, 1.50, 5]}
 
@@ -546,7 +554,7 @@ if __name__ == '__main__':
     # use_print_result:         set if result should be printed to console or not
     # use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
 
-    debug_opts_ = {"use_plot": True,
+    debug_opts_ = {"use_plot": False,
                    "use_debug_plots": False,
                    "use_plot_comparison_tph": True,
                    "use_print": True,
