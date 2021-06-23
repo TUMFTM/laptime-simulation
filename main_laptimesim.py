@@ -238,14 +238,14 @@ def main(track_opts: dict,
 
         # perform eLemons analysis
         elif sa_opts["sa_type"] == "elemons-mass":
-            # initialize this pass variables
-            sa_t_lap = np.zeros(sa_opts["range_1"][2])
-            sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
-
-        
-            with open(resultsfile, 'w') as csvfile:
-                spamwriter = csv.writer(csvfile )
-                spamwriter.writerow( ['vehicle', 'recuperation', 'mass (kg)', 'Cd(c_w_a)','lapttime (s)', 'energy (kJ)'])
+ 
+            # initialize this pass variables that collect results
+            len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            sa_t_lap = np.zeros(len_results)
+            sa_fuel_cons = np.zeros(len_results)
+            sa_iter = np.zeros(len_results)
+            sa_mass = np.zeros(len_results)
+            sa_c_d = np.zeros(len_results)
 
             for i, cur_mass in enumerate(sa_range_1):
                 print("SA: Starting solver run (%i)" % (i + 1))
@@ -255,21 +255,18 @@ def main(track_opts: dict,
 
                 # simulate lap and save lap time
                 lap.simulate_lap()
+                
+                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                sa_t_lap[i] = lap.t_cl[-1]
+                sa_iter[i] = i
+                sa_mass[i] = cur_mass
+                sa_c_d[i] = lap.driverobj.carobj.pars_general["c_w_a"] 
                 sa_t_lap[i] = lap.t_cl[-1]
                 sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
                 if solver_opts["series"] == "FE":
                     # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
                     sa_fuel_cons[i] = lap.e_cons_cl[-1] 
 
-                # record the lap data
-                with open(resultsfile, 'a') as csvfile:
-                    spamwriter = csv.writer(csvfile )
-                    spamwriter.writerow( [solver_opts["vehicle"]] +
-                                        ["{}".format( lap.driverobj.pars_driver["use_recuperation"])] +
-                                        [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
-                                        [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
-                                        [("%.3f" %  lap.t_cl[-1])] +
-                                        [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
                 # reset lap
                 lap.reset_lap()
 
@@ -277,16 +274,15 @@ def main(track_opts: dict,
 
         # perform eLemons analysis
         elif sa_opts["sa_type"] == "elemons_mass_cd":
-            results_header = ['iteration', 'vehicle', 'mass (kg)', 'Cd(c_w_a)','laptime (s)', 'energy (kJ)']
-            # initialize this pass variables that collect results
-            sa_t_lap = np.zeros(sa_opts["range_1"][2])
-            sa_fuel_cons = np.zeros(sa_opts["range_1"][2])
 
-            # open a fresh file to accumulate results
-           
-            with open(resultsfile, 'w') as csvfile:
-                spamwriter = csv.writer(csvfile)
-                spamwriter.writerow(results_header)
+            # initialize this pass variables that collect results
+            len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            sa_t_lap = np.zeros(len_results)
+            sa_fuel_cons = np.zeros(len_results)
+            sa_iter = np.zeros(len_results)
+            sa_mass = np.zeros(len_results)
+            sa_c_d = np.zeros(len_results)
+
             iter = 0
             for j, cur_cd in enumerate(sa_range_2):
                 # change coeff of drag of vehicle
@@ -300,20 +296,18 @@ def main(track_opts: dict,
 
                     # simulate lap and save lap time
                     lap.simulate_lap()
-                    sa_t_lap[i] = lap.t_cl[-1]
-                    sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+
+                    sa_fuel_cons[iter] = lap.fuel_cons_cl[-1]
+                    sa_t_lap[iter] = lap.t_cl[-1]
+                    sa_iter[iter] = iter + 1
+                    sa_mass[iter] = cur_mass
+                    sa_c_d[iter] = cur_cd
                     if solver_opts["series"] == "FE":
                         # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
-                        sa_fuel_cons[i] = lap.e_cons_cl[-1] 
+                        sa_fuel_cons[iter] = lap.e_cons_cl[-1] 
+
                     iter += 1
-                    with open(resultsfile, 'a') as csvfile:
-                        spamwriter = csv.writer(csvfile )
-                        spamwriter.writerow([iter] +
-                                            [solver_opts["vehicle"]] + 
-                                            [("%.1f" %  lap.driverobj.carobj.pars_general["m"])] +          
-                                            [("%.3f" %  lap.driverobj.carobj.pars_general["c_w_a"])] +          
-                                            [("%.3f" %  lap.t_cl[-1])] +
-                                            [("%.2f" %  (lap.e_cons_cl[-1] / 1000.0))])
+
                     lap.reset_lap()
     
     # ------------------------------------------------------------------------------------------------------------------
@@ -361,15 +355,26 @@ def main(track_opts: dict,
         else:
             pass
             # TODO: implementation of COG and aero variation missing
-    if debug_opts["use_elemons_result"]: 
-        #print("elemons results")
-        #print("#VehicleName, mass_kg, laptime_s, perLapEnergyConsumption_kj")
-        #print("VehicleName:  {} ".format( solver_opts["vehicle"]))
-        #print("use_recuperation:  {} ".format( lap.driverobj.pars_driver["use_recuperation"]))
-        #print("mass:  %.1f kg" %  lap.driverobj.carobj.pars_general["m"])
-        #print("Lap time: %.3f s, Consumption: %.2f kJ/lap" %( lap.t_cl[-1], lap.e_cons_cl[-1] / 1000.0))
-    # write velocity profile output
-    #output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
+    if debug_opts["use_elemons_result"]:
+        iter_tag = "iteration"
+        vehicle_tag = "vehicle"
+        mass_tag = "mass (kg)"
+        c_d_tag = "Cd(c_w_a)"
+        laptime_tag = "laptime (s)"
+        energy_tag = "energy (kJ)"
+        header_row = [iter_tag, vehicle_tag, mass_tag, c_d_tag, laptime_tag, energy_tag]
+
+        with open(resultsfile, 'a') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(header_row)
+            for i in range(len(sa_t_lap)):
+                csvwriter.writerow([sa_iter[i]] +
+                                    [solver_opts["vehicle"]] + 
+                                    [("%.1f" %  sa_mass[i])] +          
+                                    [("%.3f" %  sa_c_d[i])] +          
+                                    [("%.3f" %  sa_t_lap[i])] +
+                                    [("%.2f" %  (sa_fuel_cons[i] / 1000.0))])
+
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
                                track_opts["trackname"].lower() + "_" +
                                solver_opts["vehicle"].lower() + ".csv")
@@ -413,14 +418,15 @@ def main(track_opts: dict,
             plt.grid()
             plt.show()
         elif sa_opts["sa_type"] == "elemons_mass_cd":
-            # get axes from csv lists
-            contour_data = pd.read_csv(resultsfile)
+            # Good oold data mainpulation to get it graphing            
+            Laptime_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], laptime_tag: sa_t_lap[:]})
+            Energy_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], energy_tag: sa_fuel_cons[:]})
 
-            Energy_array = contour_data.pivot_table(index='mass (kg)', columns='Cd(c_w_a)', values = 'energy (kJ)').T.values
-            Laptime_array = contour_data.pivot_table(index='mass (kg)', columns='Cd(c_w_a)', values='laptime (s)').T.values
+            Energy_array = Energy_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=energy_tag).T.values
+            Laptime_array = Laptime_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=laptime_tag).T.values
 
-            mass_unique = np.sort(contour_data['mass (kg)'].unique())
-            c_d_unique = np.sort(contour_data['Cd(c_w_a)'].unique())
+            mass_unique = np.sort(np.unique(sa_mass))
+            c_d_unique = np.sort(np.unique(sa_c_d))
 
             mass_array, c_d_array = np.meshgrid(mass_unique, c_d_unique)
 
