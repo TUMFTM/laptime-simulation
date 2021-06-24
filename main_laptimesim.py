@@ -198,7 +198,7 @@ def main(track_opts: dict,
     else:
         # output file 
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-        resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}".format(date))
+        resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
@@ -237,10 +237,11 @@ def main(track_opts: dict,
                 print("SA: Finished solver run (%i)" % (i + 1))
 
         # perform eLemons analysis
-        elif sa_opts["sa_type"] == "elemons-mass":
+        elif sa_opts["sa_type"] == "elemons_mass":
  
             # initialize this pass variables that collect results
-            len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            #len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            len_results = sa_opts["range_1"][2] 
             sa_t_lap = np.zeros(len_results)
             sa_fuel_cons = np.zeros(len_results)
             sa_iter = np.zeros(len_results)
@@ -417,6 +418,34 @@ def main(track_opts: dict,
             ax.set_ylabel("fuel consumption in kg/lap")
             plt.grid()
             plt.show()
+
+        elif sa_opts["sa_type"] == "elemons_mass":
+            # lap time
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(sa_range_1, sa_t_lap, "x")
+            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
+            ax.set_ylim(sa_t_lap[0], sa_t_lap[-1])
+            ax.set_title("SA of lap time to mass")
+            ax.set_xlabel("mass m in kg")
+            ax.set_ylabel("lap time t in s")
+            ax.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            plt.grid()
+            plt.show()
+
+            # fuel (energy) consumption
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(sa_range_1, sa_fuel_cons, "x")
+            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
+            ax.set_ylim(sa_fuel_cons[0], sa_fuel_cons[-1])
+            ax.set_title("SA of energy consumption to mass")
+            ax.set_xlabel("mass m in kg")
+            ax.set_ylabel("energy consumption in kJ/lap")
+            ax.set_title('Energy Consumption\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            plt.grid()
+            plt.show()
+
         elif sa_opts["sa_type"] == "elemons_mass_cd":
             # Good oold data mainpulation to get it graphing            
             Laptime_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], laptime_tag: sa_t_lap[:]})
@@ -433,9 +462,17 @@ def main(track_opts: dict,
             fig = plt.figure()
             fig2 = plt.figure()
             ax1 = fig.add_subplot(111,projection='3d')
-            ax2 = fig2.add_subplot(111,projection='3d')
-
+            ax1.set_xlabel("Mass (kg)")
+            ax1.set_ylabel("Coeff of Drag - Cd")
+            ax1.set_zlabel("Energy per lap (kJ) * ")
+            ax1.set_title('Energy Per Lap\nvehicle: ' +  solver_opts["vehicle"] + '\ntrack: ' + track_opts["trackname"])
             ax1.plot_surface(mass_array, c_d_array, Energy_array)
+
+            ax2 = fig2.add_subplot(111,projection='3d')
+            ax2.set_xlabel('Mass (kg)')
+            ax2.set_ylabel('Coeff of Drag - Cd')
+            ax2.set_zlabel('Lap Time (sec)')
+            ax2.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
             ax2.plot_surface(mass_array, c_d_array, Laptime_array)
             plt.show()
     # ------------------------------------------------------------------------------------------------------------------
@@ -534,16 +571,17 @@ if __name__ == '__main__':
 
     # sensitivity analysis options -------------------------------------------------------------------------------------
     # use_sa:   switch to deactivate sensitivity analysis
-    # sa_type:  'mass', 'aero', 'cog' 'elemons-mass'
+    # sa_type:  'mass', 'aero', 'cog', 'elemons_mass', 'elemons_mass_cd'
     # range_1:  range of parameter variation [start, end, number of steps]
-    # range_2:  range of parameter variation [start, end, number of steps] -> CURRENTLY NOT IMPLEMENTED
+    # range_2:  range of parameter variation [start, end, number of steps] 
     # RMH Note:
     #  sa_type          Range 1 variable     Range 2 variable
-    # 'mass'            vehicle mass         not used - set to 'None' without quotes
+    #  ---------------- -------------------- -------------------------------------
+    # 'mass'            vehicle mass (kg)    not used - set to 'None' without quotes
     # 'areo'            feature not implement 
     # 'cog'             feature not implement 
-    # 'elemons-mass'    vehicle mass         not used - set to 'None' without quotes 
-    # 'elemons-mass-cd' vehicle mass         Cd c_w_a (coefficient of drag)
+    # 'elemons_mass'    vehicle mass (kg)    not used - set to 'None' without quotes 
+    # 'elemons_mass_cd' vehicle mass (kg)    Cd c_w_a (coefficient of drag)
 
     '''
     # Original TUM settings 
@@ -555,7 +593,7 @@ if __name__ == '__main__':
     # eLemons modifications to allow iteration over ranges of our interest
     sa_opts_ = {"use_sa": True,
                 "sa_type": "elemons_mass_cd",
-                "range_1": [700.0, 1200.0, 10],
+                "range_1": [700.0, 1200.0, 5],
                 "range_2": [1.10, 1.50, 5]}
 
     # debug options ----------------------------------------------------------------------------------------------------
