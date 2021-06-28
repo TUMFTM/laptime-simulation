@@ -495,7 +495,19 @@ def main(track_opts: dict,
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
+    # Importing sa_opts from .ini file included in directory
+    # https://docs.python.org/3/library/configparser.html
+    config = configparser.ConfigParser()
+    # config.add_section("track_opts_")
+    # config.add_section("solver_opts_")
+    # config.add_section("driver_opts_")
+    # config.add_section("SA_OPTS")
+    # config.add_section("debug_opts_")
+ 
+    config.read("sa_opts.ini")
+    print(config.sections())
+    print(config.items())
+    print({section: dict(config[section]) for section in config.sections()})
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -516,15 +528,15 @@ if __name__ == '__main__':
     # use_drs2:             DRS zone 2 switch
     # use_pit:              activate pit stop (requires _pit track file!)
 
-    track_opts_ = {"trackname": "HighPlainsFullTrack",
-                   "flip_track": False,
-                   "mu_weather": 1.0,
-                   "interp_stepsize_des": 5.0,
-                   "curv_filt_width": 10.0,
-                   "use_drs1": True,
-                   "use_drs2": True,
-                   "use_pit": False}
-
+    track_opts_ = {"trackname": config["track_opts_"]["trackname"],
+                   "flip_track": config["track_opts_"].getboolean("flip_track"),
+                   "mu_weather": float(config["track_opts_"]["mu_weather"]),
+                   "interp_stepsize_des": float(config["track_opts_"]["interp_stepsize_des"]),
+                   "curv_filt_width": float(config["track_opts_"]["curv_filt_width"]),
+                   "use_drs1": config["track_opts_"].getboolean("use_drs1"),
+                   "use_drs2": config["track_opts_"].getboolean("use_drs2"),
+                   "use_pit": config["track_opts_"].getboolean("use_pit")}
+    print(track_opts_)
     # solver options ---------------------------------------------------------------------------------------------------
     # vehicle:                  vehicle parameter file
     # series:                   F1, FE
@@ -535,14 +547,14 @@ if __name__ == '__main__':
     # max_no_em_iters:          maximum number of iterations for EM recalculation
     # es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
 
-    solver_opts_ = {"vehicle": "FE_Berlin.ini",
-                    "series": "FE",
-                    "limit_braking_weak_side": 'FA',
-                    "v_start": 100.0 / 3.6,
-                    "find_v_start": True,
-                    "max_no_em_iters": 5,
-                    "es_diff_max": 1.0}
-
+    solver_opts_ = {"vehicle": config["solver_opts_"].get("vehicle"),
+                    "series": config["solver_opts_"]["series"],
+                    "limit_braking_weak_side": config["solver_opts_"]["limit_braking_weak_side"],
+                    "v_start": float(config["solver_opts_"]["v_start"]),
+                    "find_v_start": config["solver_opts_"].getboolean("find_v_start"),
+                    "max_no_em_iters": float(config["solver_opts_"]["max_no_em_iters"]),
+                    "es_diff_max": float(config["solver_opts_"]["es_diff_max"])}
+    print(solver_opts_)
     # driver options ---------------------------------------------------------------------------------------------------
     # vel_subtr_corner: [m/s] velocity subtracted from max. cornering vel. since drivers will not hit the maximum
     #                   perfectly
@@ -559,18 +571,18 @@ if __name__ == '__main__':
     # use_lift_coast:   switch to turn lift and coast on/off
     # lift_coast_dist:  [m] lift and coast before braking point
 
-    driver_opts_ = {"vel_subtr_corner": 0.5,
-                    "vel_lim_glob": None,
-                    "yellow_s1": False,
-                    "yellow_s2": False,
-                    "yellow_s3": False,
-                    "yellow_throttle": 0.3,
-                    "initial_energy": 4.58e6,
-                    "em_strategy": "FCFB",
-                    "use_recuperation": False,
-                    "use_lift_coast": False,
-                    "lift_coast_dist": 10.0}
-
+    driver_opts_ = {"vel_subtr_corner": config["driver_opts_"].getfloat("vel_subtr_corner"),
+                    "vel_lim_glob": config["driver_opts_"].getfloat("vel_lim_glob"),
+                    "yellow_s1": config["driver_opts_"].getboolean("yellow_s1"),
+                    "yellow_s2": config["driver_opts_"].getboolean("yellow_s2"),
+                    "yellow_s3": config["driver_opts_"].getboolean("yellow_s3"),
+                    "yellow_throttle": config["driver_opts_"].getfloat("yellow_throttle"),
+                    "initial_energy": config["driver_opts_"].getfloat("initial_energy"),
+                    "em_strategy": config["driver_opts_"].get("em_strategy"),
+                    "use_recuperation": config["driver_opts_"].getboolean("use_recuperation"),
+                    "use_lift_coast": config["driver_opts_"].getboolean("use_lift_coast"),
+                    "lift_coast_dist": config["driver_opts_"].getfloat("lift_coast_dist")}
+    print(driver_opts_)
     # sensitivity analysis options -------------------------------------------------------------------------------------
     # use_sa:   switch to deactivate sensitivity analysis
     # sa_type:  'mass', 'aero', 'cog', 'elemons_mass', 'elemons_mass_cd'
@@ -599,10 +611,7 @@ if __name__ == '__main__':
                 "range_1": [700.0, 1200.0, 5],
                 "range_2": [1.10, 1.50, 5]}
     '''
-    # Importing sa_opts from .ini file included in directory
-    config = configparser.ConfigParser()
-    config.read("sa_opts.ini")
-    
+   
     sa_opts_ = {"use_sa": config['SA_OPTS']['use_sa'] == 'True',
                 "sa_type": config['SA_OPTS']['sa_type'],
                 "range_1": json.loads(config['SA_OPTS']['range_1']),
@@ -617,13 +626,14 @@ if __name__ == '__main__':
     # use_print_result:         set if result should be printed to console or not
     # use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
 
-    debug_opts_ = {"use_plot": False,
-                   "use_debug_plots": False,
-                   "use_plot_comparison_tph": True,
-                   "use_print": True,
-                   "use_print_result": True,
-                   "use_elemons_result": True}
-
+    debug_opts_ = {"use_plot": config["driver_opts_"].getboolean("use_plot"),
+                   "use_debug_plots": config["driver_opts_"].getboolean("use_debug_plots"),
+                   "use_plot_comparison_tph": config["driver_opts_"].getboolean("use_plot_comparison_tph"),
+                   "use_print": config["driver_opts_"].getboolean("use_print"),
+                   "use_print_result": config["driver_opts_"].getboolean("use_print_result"),
+                   "use_elemons_result": config["driver_opts_"].getboolean("use_elemons_result")}
+    print(debug_opts_)
+    exit(0)
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
