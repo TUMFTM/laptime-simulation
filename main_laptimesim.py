@@ -1,10 +1,14 @@
 import laptimesim
 import time
+import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pkg_resources
 import pickle
+import csv
+from mpl_toolkits.mplot3d import Axes3D
+import pandas as pd
 
 """
 author:
@@ -192,6 +196,10 @@ def main(track_opts: dict,
             lap.plot_enginespeed_gears()
 
     else:
+        # output file 
+        date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+        resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
+
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
         if debug_opts["use_print"]:
@@ -202,8 +210,8 @@ def main(track_opts: dict,
 
         # create parameter ranges
         sa_range_1 = np.linspace(sa_opts["range_1"][0], sa_opts["range_1"][1], sa_opts["range_1"][2])
-        # if sa_opts["range_2"] is not None:
-        #     sa_range_2 = np.linspace(sa_opts["range_2"][0], sa_opts["range_2"][1], sa_opts["range_2"][2])
+        if sa_opts["range_2"] is not None:
+             sa_range_2 = np.linspace(sa_opts["range_2"][0], sa_opts["range_2"][1], sa_opts["range_2"][2])
 
         # perform analysis
         if sa_opts["sa_type"] == "mass":
@@ -220,16 +228,89 @@ def main(track_opts: dict,
                 lap.simulate_lap()
                 sa_t_lap[i] = lap.t_cl[-1]
                 sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                if solver_opts["series"] == "FE":
+                    sa_fuel_cons[i] = lap.e_cons_cl[-1] # RMH
 
                 # reset lap
                 lap.reset_lap()
 
                 print("SA: Finished solver run (%i)" % (i + 1))
 
-        else:
-            sa_t_lap = np.zeros((sa_opts["range_1"][2], sa_opts["range_2"][2]))
-            # TODO: implementation of COG and aero variation missing
+        # perform eLemons analysis
+        elif sa_opts["sa_type"] == "elemons_mass":
+ 
+            # initialize this pass variables that collect results
+            #len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            len_results = sa_opts["range_1"][2] 
+            sa_t_lap = np.zeros(len_results)
+            sa_fuel_cons = np.zeros(len_results)
+            sa_iter = np.zeros(len_results)
+            sa_mass = np.zeros(len_results)
+            sa_c_d = np.zeros(len_results)
 
+            for i, cur_mass in enumerate(sa_range_1):
+                print("SA: Starting solver run (%i)" % (i + 1))
+
+                # change mass of vehicle
+                lap.driverobj.carobj.pars_general["m"] = cur_mass
+
+                # simulate lap and save lap time
+                lap.simulate_lap()
+                
+                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                sa_t_lap[i] = lap.t_cl[-1]
+                sa_iter[i] = i
+                sa_mass[i] = cur_mass
+                sa_c_d[i] = lap.driverobj.carobj.pars_general["c_w_a"] 
+                sa_t_lap[i] = lap.t_cl[-1]
+                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
+                if solver_opts["series"] == "FE":
+                    # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
+                    sa_fuel_cons[i] = lap.e_cons_cl[-1] 
+
+                # reset lap
+                lap.reset_lap()
+
+                print("SA: Finished solver run (%i)" % (i + 1))
+
+        # perform eLemons analysis
+        elif sa_opts["sa_type"] == "elemons_mass_cd":
+
+            # initialize this pass variables that collect results
+            len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            sa_t_lap = np.zeros(len_results)
+            sa_fuel_cons = np.zeros(len_results)
+            sa_iter = np.zeros(len_results)
+            sa_mass = np.zeros(len_results)
+            sa_c_d = np.zeros(len_results)
+
+            iter = 0
+            for j, cur_cd in enumerate(sa_range_2):
+                # change coeff of drag of vehicle
+                lap.driverobj.carobj.pars_general["c_w_a"] = cur_cd
+
+                for i, cur_mass in enumerate(sa_range_1):
+                    print("\nSA: Starting solver run (%i)" % ((j*sa_opts["range_1"][2]) + (i + 1)))
+
+                    # change mass of vehicle
+                    lap.driverobj.carobj.pars_general["m"] = cur_mass
+
+                    # simulate lap and save lap time
+                    lap.simulate_lap()
+
+                    sa_fuel_cons[iter] = lap.fuel_cons_cl[-1]
+                    sa_t_lap[iter] = lap.t_cl[-1]
+                    sa_iter[iter] = iter + 1
+                    sa_mass[iter] = cur_mass
+                    sa_c_d[iter] = cur_cd
+                    if solver_opts["series"] == "FE":
+                        # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
+                        sa_fuel_cons[iter] = lap.e_cons_cl[-1] 
+
+                    iter += 1
+
+                    lap.reset_lap()
+    
     # ------------------------------------------------------------------------------------------------------------------
     # EXPORT -----------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -275,9 +356,29 @@ def main(track_opts: dict,
         else:
             pass
             # TODO: implementation of COG and aero variation missing
+    if debug_opts["use_elemons_result"]:
+        iter_tag = "iteration"
+        vehicle_tag = "vehicle"
+        mass_tag = "mass (kg)"
+        c_d_tag = "Cd(c_w_a)"
+        laptime_tag = "laptime (s)"
+        energy_tag = "energy (kJ)"
+        header_row = [iter_tag, vehicle_tag, mass_tag, c_d_tag, laptime_tag, energy_tag]
 
-    # write velocity profile output
-    output_path = os.path.join(output_path_velprofile, "velprofile_" + track_opts["trackname"].lower() + ".csv")
+        with open(resultsfile, 'a') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(header_row)
+            for i in range(len(sa_t_lap)):
+                csvwriter.writerow([sa_iter[i]] +
+                                    [solver_opts["vehicle"]] + 
+                                    [("%.1f" %  sa_mass[i])] +          
+                                    [("%.3f" %  sa_c_d[i])] +          
+                                    [("%.3f" %  sa_t_lap[i])] +
+                                    [("%.2f" %  (sa_fuel_cons[i] / 1000.0))])
+
+    output_path = os.path.join(output_path_velprofile, "velprofile_" + 
+                               track_opts["trackname"].lower() + "_" +
+                               solver_opts["vehicle"].lower() + ".csv")
 
     tmp_data = np.column_stack((lap.trackobj.dists_cl[:-1], lap.vel_cl[:-1]))
 
@@ -292,7 +393,6 @@ def main(track_opts: dict,
         if debug_opts["use_plot"]:
             lap.plot_overview()
             # lap.plot_revs_gears()
-
     else:
         if sa_opts["sa_type"] == "mass":
             # lap time
@@ -319,6 +419,62 @@ def main(track_opts: dict,
             plt.grid()
             plt.show()
 
+        elif sa_opts["sa_type"] == "elemons_mass":
+            # lap time
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(sa_range_1, sa_t_lap, "x")
+            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
+            ax.set_ylim(sa_t_lap[0], sa_t_lap[-1])
+            ax.set_title("SA of lap time to mass")
+            ax.set_xlabel("mass m in kg")
+            ax.set_ylabel("lap time t in s")
+            ax.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            plt.grid()
+            plt.show()
+
+            # fuel (energy) consumption
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.plot(sa_range_1, sa_fuel_cons, "x")
+            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
+            ax.set_ylim(sa_fuel_cons[0], sa_fuel_cons[-1])
+            ax.set_title("SA of energy consumption to mass")
+            ax.set_xlabel("mass m in kg")
+            ax.set_ylabel("energy consumption in kJ/lap")
+            ax.set_title('Energy Consumption\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            plt.grid()
+            plt.show()
+
+        elif sa_opts["sa_type"] == "elemons_mass_cd":
+            # Good oold data mainpulation to get it graphing            
+            Laptime_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], laptime_tag: sa_t_lap[:]})
+            Energy_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], energy_tag: sa_fuel_cons[:]})
+
+            Energy_array = Energy_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=energy_tag).T.values
+            Laptime_array = Laptime_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=laptime_tag).T.values
+
+            mass_unique = np.sort(np.unique(sa_mass))
+            c_d_unique = np.sort(np.unique(sa_c_d))
+
+            mass_array, c_d_array = np.meshgrid(mass_unique, c_d_unique)
+
+            fig = plt.figure()
+            fig2 = plt.figure()
+            ax1 = fig.add_subplot(111,projection='3d')
+            ax1.set_xlabel("Mass (kg)")
+            ax1.set_ylabel("Coeff of Drag - Cd")
+            ax1.set_zlabel("Energy per lap (kJ) * ")
+            ax1.set_title('Energy Per Lap\nvehicle: ' +  solver_opts["vehicle"] + '\ntrack: ' + track_opts["trackname"])
+            ax1.plot_surface(mass_array, c_d_array, Energy_array)
+
+            ax2 = fig2.add_subplot(111,projection='3d')
+            ax2.set_xlabel('Mass (kg)')
+            ax2.set_ylabel('Coeff of Drag - Cd')
+            ax2.set_zlabel('Lap Time (sec)')
+            ax2.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            ax2.plot_surface(mass_array, c_d_array, Laptime_array)
+            plt.show()
     # ------------------------------------------------------------------------------------------------------------------
     # CI TESTING -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -358,7 +514,7 @@ if __name__ == '__main__':
     # use_drs2:             DRS zone 2 switch
     # use_pit:              activate pit stop (requires _pit track file!)
 
-    track_opts_ = {"trackname": "Shanghai",
+    track_opts_ = {"trackname": "HighPlainsFullTrack",
                    "flip_track": False,
                    "mu_weather": 1.0,
                    "interp_stepsize_des": 5.0,
@@ -377,8 +533,8 @@ if __name__ == '__main__':
     # max_no_em_iters:          maximum number of iterations for EM recalculation
     # es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
 
-    solver_opts_ = {"vehicle": "F1_Shanghai.ini",
-                    "series": "F1",
+    solver_opts_ = {"vehicle": "FE_Berlin.ini",
+                    "series": "FE",
                     "limit_braking_weak_side": 'FA',
                     "v_start": 100.0 / 3.6,
                     "find_v_start": True,
@@ -409,20 +565,36 @@ if __name__ == '__main__':
                     "yellow_throttle": 0.3,
                     "initial_energy": 4.58e6,
                     "em_strategy": "FCFB",
-                    "use_recuperation": True,
+                    "use_recuperation": False,
                     "use_lift_coast": False,
                     "lift_coast_dist": 10.0}
 
     # sensitivity analysis options -------------------------------------------------------------------------------------
     # use_sa:   switch to deactivate sensitivity analysis
-    # sa_type:  'mass', 'aero', 'cog'
+    # sa_type:  'mass', 'aero', 'cog', 'elemons_mass', 'elemons_mass_cd'
     # range_1:  range of parameter variation [start, end, number of steps]
-    # range_2:  range of parameter variation [start, end, number of steps] -> CURRENTLY NOT IMPLEMENTED
+    # range_2:  range of parameter variation [start, end, number of steps] 
+    # RMH Note:
+    #  sa_type          Range 1 variable     Range 2 variable
+    #  ---------------- -------------------- -------------------------------------
+    # 'mass'            vehicle mass (kg)    not used - set to 'None' without quotes
+    # 'areo'            feature not implement 
+    # 'cog'             feature not implement 
+    # 'elemons_mass'    vehicle mass (kg)    not used - set to 'None' without quotes 
+    # 'elemons_mass_cd' vehicle mass (kg)    Cd c_w_a (coefficient of drag)
 
+    '''
+    # Original TUM settings 
     sa_opts_ = {"use_sa": False,
                 "sa_type": "mass",
                 "range_1": [733.0, 833.0, 5],
                 "range_2": None}
+    '''
+    # eLemons modifications to allow iteration over ranges of our interest
+    sa_opts_ = {"use_sa": True,
+                "sa_type": "elemons_mass_cd",
+                "range_1": [700.0, 1200.0, 5],
+                "range_2": [1.10, 1.50, 5]}
 
     # debug options ----------------------------------------------------------------------------------------------------
     # use_plot:                 plot results
@@ -430,12 +602,14 @@ if __name__ == '__main__':
     # use_plot_comparison_tph:  calculate velocity profile with TPH FB solver and plot a comparison
     # use_print:                set if prints to console should be used or not (does not suppress hints/warnings)
     # use_print_result:         set if result should be printed to console or not
+    # use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
 
     debug_opts_ = {"use_plot": False,
                    "use_debug_plots": False,
-                   "use_plot_comparison_tph": False,
+                   "use_plot_comparison_tph": True,
                    "use_print": True,
-                   "use_print_result": True}
+                   "use_print_result": True,
+                   "use_elemons_result": True}
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
