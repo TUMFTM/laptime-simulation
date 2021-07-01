@@ -9,6 +9,7 @@ import pickle
 import csv
 from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
+import toml
 
 """
 author:
@@ -197,6 +198,7 @@ def main(track_opts: dict,
 
     else:
         # output file 
+        print("in else")
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
 
@@ -278,6 +280,7 @@ def main(track_opts: dict,
 
             # initialize this pass variables that collect results
             len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
+            print("len_results: {}".format(len_results))
             sa_t_lap = np.zeros(len_results)
             sa_fuel_cons = np.zeros(len_results)
             sa_iter = np.zeros(len_results)
@@ -493,123 +496,24 @@ def main(track_opts: dict,
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
+    # Importing config from sim_config.toml
+    config = toml.load("sim_config.toml")
+ 
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
+    # See sim_config.toml for variable descriptions
+    track_opts_ = config["track_opts_"]
 
-    # F1 qualifying mode:   DRS activated, EM strategy FCFB
-    # F1 race mode:         DRS as desired, EM strategy LBP
-    # FE qualifying mode:   DRS deactivated, EM strategy FCFB
-    # FE race mode:         DRS deactivated, EM strategy FCFB + lift&coast
-    # tracks must be unclosed, i.e. last point != first point!
+    solver_opts_ = config["solver_opts_"]
+    driver_opts_ = config["driver_opts_"]
+    
+    # These are because of this bug: https://github.com/uiri/toml/issues/270
+    config["sa_opts_"]["range_1"][2] = int(config["sa_opts_"]["range_1"][2])
+    config["sa_opts_"]["range_2"][2] = int(config["sa_opts_"]["range_2"][2])
+    sa_opts_ = config["sa_opts_"]
 
-    # track options ----------------------------------------------------------------------------------------------------
-    # trackname:            track name of desired race track (file must be available in the input folder)
-    # flip_track:           switch to flip track direction if required
-    # mu_weather:           [-] factor to consider wet track, e.g. by mu_weather = 0.6
-    # interp_stepsize_des:  [m], desired stepsize after interpolation of the input raceline points
-    # curv_filt_width:      [m] window width of moving average filter -> set None for deactivation
-    # use_drs1:             DRS zone 1 switch
-    # use_drs2:             DRS zone 2 switch
-    # use_pit:              activate pit stop (requires _pit track file!)
-
-    track_opts_ = {"trackname": "HighPlainsFullTrack",
-                   "flip_track": False,
-                   "mu_weather": 1.0,
-                   "interp_stepsize_des": 5.0,
-                   "curv_filt_width": 10.0,
-                   "use_drs1": True,
-                   "use_drs2": True,
-                   "use_pit": False}
-
-    # solver options ---------------------------------------------------------------------------------------------------
-    # vehicle:                  vehicle parameter file
-    # series:                   F1, FE
-    # limit_braking_weak_side:  can be None, 'FA', 'RA', 'all' -> set if brake force potential should be determined
-    #                           based on the weak (i.e. inner) side of the car, e.g. when braking into a corner
-    # v_start:                  [m/s] velocity at start
-    # find_v_start:             determine the real velocity at start
-    # max_no_em_iters:          maximum number of iterations for EM recalculation
-    # es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
-
-    solver_opts_ = {"vehicle": "FE_Berlin.ini",
-                    "series": "FE",
-                    "limit_braking_weak_side": 'FA',
-                    "v_start": 100.0 / 3.6,
-                    "find_v_start": True,
-                    "max_no_em_iters": 5,
-                    "es_diff_max": 1.0}
-
-    # driver options ---------------------------------------------------------------------------------------------------
-    # vel_subtr_corner: [m/s] velocity subtracted from max. cornering vel. since drivers will not hit the maximum
-    #                   perfectly
-    # vel_lim_glob:     [m/s] velocity limit, set None if unused
-    # yellow_s1:        yellow flag in sector 1
-    # yellow_s2:        yellow flag in sector 2
-    # yellow_s3:        yellow flag in sector 3
-    # yellow_throttle:  throttle position in a yellow flag sector
-    # initial_energy:   [J] initial energy (F1: max. 4 MJ/lap, FE Berlin: 4.58 MJ/lap)
-    # em_strategy:      FCFB, LBP, LS, NONE -> FCFB = First Come First Boost, LBP = Longest (time) to Breakpoint,
-    #                   LS = Lowest Speed, FE requires FCFB as it only drives in electric mode!
-    # use_recuperation: set if recuperation by e-motor and electric turbocharger is allowed or not (lift&coast is
-    #                   currently only considered with FCFB)
-    # use_lift_coast:   switch to turn lift and coast on/off
-    # lift_coast_dist:  [m] lift and coast before braking point
-
-    driver_opts_ = {"vel_subtr_corner": 0.5,
-                    "vel_lim_glob": None,
-                    "yellow_s1": False,
-                    "yellow_s2": False,
-                    "yellow_s3": False,
-                    "yellow_throttle": 0.3,
-                    "initial_energy": 4.58e6,
-                    "em_strategy": "FCFB",
-                    "use_recuperation": False,
-                    "use_lift_coast": False,
-                    "lift_coast_dist": 10.0}
-
-    # sensitivity analysis options -------------------------------------------------------------------------------------
-    # use_sa:   switch to deactivate sensitivity analysis
-    # sa_type:  'mass', 'aero', 'cog', 'elemons_mass', 'elemons_mass_cd'
-    # range_1:  range of parameter variation [start, end, number of steps]
-    # range_2:  range of parameter variation [start, end, number of steps] 
-    # RMH Note:
-    #  sa_type          Range 1 variable     Range 2 variable
-    #  ---------------- -------------------- -------------------------------------
-    # 'mass'            vehicle mass (kg)    not used - set to 'None' without quotes
-    # 'areo'            feature not implement 
-    # 'cog'             feature not implement 
-    # 'elemons_mass'    vehicle mass (kg)    not used - set to 'None' without quotes 
-    # 'elemons_mass_cd' vehicle mass (kg)    Cd c_w_a (coefficient of drag)
-
-    '''
-    # Original TUM settings 
-    sa_opts_ = {"use_sa": False,
-                "sa_type": "mass",
-                "range_1": [733.0, 833.0, 5],
-                "range_2": None}
-    '''
-    # eLemons modifications to allow iteration over ranges of our interest
-    sa_opts_ = {"use_sa": True,
-                "sa_type": "elemons_mass_cd",
-                "range_1": [700.0, 1200.0, 5],
-                "range_2": [1.10, 1.50, 5]}
-
-    # debug options ----------------------------------------------------------------------------------------------------
-    # use_plot:                 plot results
-    # use_debug_plots:          plot additional plots for debugging
-    # use_plot_comparison_tph:  calculate velocity profile with TPH FB solver and plot a comparison
-    # use_print:                set if prints to console should be used or not (does not suppress hints/warnings)
-    # use_print_result:         set if result should be printed to console or not
-    # use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
-
-    debug_opts_ = {"use_plot": False,
-                   "use_debug_plots": False,
-                   "use_plot_comparison_tph": True,
-                   "use_print": True,
-                   "use_print_result": True,
-                   "use_elemons_result": True}
+    debug_opts_ = config["debug_opts_"]
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------

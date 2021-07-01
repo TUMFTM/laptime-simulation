@@ -1,0 +1,117 @@
+# This .toml file is a copy of the 'user input' section of the original TUM
+# simulation, just formatted to work with a .toml file input type
+# https://toml.io/en/v1.0.0
+
+# ------------------------------------------------------------------------------------------------------------------
+# USER INPUT -------------------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------
+
+# F1 qualifying mode:   DRS activated, EM strategy FCFB
+# F1 race mode:         DRS as desired, EM strategy LBP
+# FE qualifying mode:   DRS deactivated, EM strategy FCFB
+# FE race mode:         DRS deactivated, EM strategy FCFB + lift&coast
+# tracks must be unclosed, i.e. last point != first point!
+
+# track options ----------------------------------------------------------------------------------------------------
+# trackname:            track name of desired race track (file must be available in the input folder)
+# flip_track:           switch to flip track direction if required
+# mu_weather:           [-] factor to consider wet track, e.g. by mu_weather = 0.6
+# interp_stepsize_des:  [m], desired stepsize after interpolation of the input raceline points
+# curv_filt_width:      [m] window width of moving average filter -> set None for deactivation
+# use_drs1:             DRS zone 1 switch
+# use_drs2:             DRS zone 2 switch
+# use_pit:              activate pit stop (requires _pit track file!)
+
+[track_opts_]
+    trackname = "HighPlainsFullTrack"
+    flip_track = false
+    mu_weather = 1.0
+    interp_stepsize_des = 5.0
+    curv_filt_width = 10.0
+    use_drs1 = false
+    use_drs2 = false
+    use_pit = false
+
+# solver options ---------------------------------------------------------------------------------------------------
+# vehicle:                  vehicle parameter file
+# series:                   F1, FE
+# limit_braking_weak_side:  can be None, 'FA', 'RA', 'all' -> set if brake force potential should be determined
+#                           based on the weak (i.e. inner) side of the car, e.g. when braking into a corner
+# v_start:                  [m/s] velocity at start
+# find_v_start:             determine the real velocity at start
+# max_no_em_iters:          maximum number of iterations for EM recalculation
+# es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
+
+[solver_opts_]
+    vehicle = "FE_Berlin.ini"
+    series = "FE"
+    limit_braking_weak_side = "FA"
+    v_start = 27.7 
+    find_v_start = true
+    max_no_em_iters = 5
+    es_diff_max = 1.0
+
+# driver options ---------------------------------------------------------------------------------------------------
+# vel_subtr_corner: [m/s] velocity subtracted from max. cornering vel. since drivers will not hit the maximum
+#                   perfectly
+# vel_lim_glob:     [m/s] velocity limit, set very high if unused, THIS IS DIFFERENT THAN THE ORIGINAL BEHAVIOR
+# yellow_s1:        yellow flag in sector 1
+# yellow_s2:        yellow flag in sector 2
+# yellow_s3:        yellow flag in sector 3
+# yellow_throttle:  throttle position in a yellow flag sector
+# initial_energy:   [J] initial energy (F1: max. 4 MJ/lap, FE Berlin: 4.58 MJ/lap)
+# em_strategy:      FCFB, LBP, LS, NONE -> FCFB = First Come First Boost, LBP = Longest (time) to Breakpoint,
+#                   LS = Lowest Speed, FE requires FCFB as it only drives in electric mode!
+# use_recuperation: set if recuperation by e-motor and electric turbocharger is allowed or not (lift&coast is
+#                   currently only considered with FCFB)
+# use_lift_coast:   switch to turn lift and coast on/off
+# lift_coast_dist:  [m] lift and coast before braking point
+
+[driver_opts_]
+    vel_subtr_corner = 0.5
+    vel_lim_glob = 1000
+    yellow_s1 = false
+    yellow_s2 = false
+    yellow_s3 = false
+    yellow_throttle = 0.3
+    initial_energy = 4.58e6
+    em_strategy = "FCFB"
+    use_recuperation = false
+    use_lift_coast = false
+    lift_coast_dist = 10.0
+
+# sensitivity analysis options -------------------------------------------------------------------------------------
+# use_sa:   switch to deactivate sensitivity analysis
+# sa_type:  'mass', 'aero', 'cog' 'elemons-mass'
+# range_1:  range of parameter variation [start, end, number of steps]
+# range_2:  range of parameter variation [start, end, number of steps]
+# RMH Note:
+#  sa_type          Range 1 variable     Range 2 variable
+# 'mass'            vehicle mass         not used
+# 'areo'            feature not implement 
+# 'cog'             feature not implement 
+# 'elemons-mass'    vehicle mass         not used - set to 'None' without quotes 
+# 'elemons-mass-cd' vehicle mass         Cd c_w_a (coefficient of drag)
+
+[sa_opts_]
+    use_sa = true
+    sa_type = "elemons_mass_cd"
+    range_1 = [700.0, 1200.0, 10.0] # note that the last value needs to be a int after parsed, see bug below
+    range_2 = [1.10, 1.50, 5.0] # same as above
+# https://github.com/uiri/toml/issues/270
+
+# debug options ----------------------------------------------------------------------------------------------------
+# use_plot:                 plot results
+# use_debug_plots:          plot additional plots for debugging
+# use_plot_comparison_tph:  calculate velocity profile with TPH FB solver and plot a comparison
+# use_print:                set if prints to console should be used or not (does not suppress hints/warnings)
+# use_print_result:         set if result should be printed to console or not
+# use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
+
+[debug_opts_]
+    use_plot = false
+    use_debug_plots = false
+    use_plot_comparison_tph = true
+    use_print = true
+    use_print_result = true
+    use_elemons_result = true
