@@ -97,18 +97,19 @@
 # range_1:  range of parameter variation [start, end, number of steps]
 # range_2:  range of parameter variation [start, end, number of steps]
 # RMH Note:
-#  sa_type          Range 1 variable     Range 2 variable
-# 'mass'            vehicle mass         not used
-# 'areo'            feature not implement 
-# 'cog'             feature not implement 
-# 'elemons-mass'    vehicle mass         not used - set to 'None' without quotes 
-# 'elemons-mass-cd' vehicle mass         Cd c_w_a (coefficient of drag)
-
+#  sa_type                  Range 1 variable     Range 2 variable               Range 3
+# 'mass'                    vehicle mass         not used
+# 'areo'                    feature not implement 
+# 'cog'                     feature not implement 
+# 'elemons-mass'            vehicle mass         not used - set to 'None' without quotes 
+# 'elemons_mass_cd'         vehicle mass         Cd c_w_a (coefficient of drag)
+# 'elemons_mass_cd_torque'  vehicle mass         Cd c_w_a (coefficient of drag) torque_e_motor_max 
 [sa_opts_]
     use_sa = true
-    sa_type = "elemons_mass_cd"
-    range_1 = [700.0, 1200.0, 10.0] # note that the last value needs to be a int after parsed, see bug below
+    sa_type = "elemons_mass_cd_torque"
+    range_1 = [400.0, 1200.0, 5.0] # note that the last value needs to be a int after parsed, see bug below
     range_2 = [1.10, 1.50, 5.0] # same as above
+    range_3 = [20.0, 200.0, 5.0]  # same note as above
 # https://github.com/uiri/toml/issues/270
 
 # debug options ----------------------------------------------------------------------------------------------------
