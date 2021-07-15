@@ -46,6 +46,8 @@ class CarElectric(Car):
         pars_veh_tmp["gearbox"]["n_shift"] = np.array(pars_veh_tmp["gearbox"]["n_shift"])
         pars_veh_tmp["gearbox"]["e_i"] = np.array(pars_veh_tmp["gearbox"]["e_i"])
 
+        self.battery_capacity = pars_veh_tmp["battery"]["battery_capacity"]
+
         # initialize base class object
         Car.__init__(self,
                      powertrain_type=pars_veh_tmp["powertrain_type"],

@@ -11,6 +11,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import toml
 
+from race_sim import RaceSim
+
 """
 author:
 Alexander Heilmeier (based on the term thesis of Maximilian Geisslinger)
@@ -35,7 +37,8 @@ def main(track_opts: dict,
          solver_opts: dict,
          driver_opts: dict,
          sa_opts: dict,
-         debug_opts: dict) -> laptimesim.src.lap.Lap:
+         debug_opts: dict,
+         race_characteristics: dict) -> laptimesim.src.lap.Lap:
 
     # ------------------------------------------------------------------------------------------------------------------
     # CHECK PYTHON DEPENDENCIES ----------------------------------------------------------------------------------------
@@ -166,8 +169,7 @@ def main(track_opts: dict,
                                  trackobj=track,
                                  pars_solver=solver_opts,
                                  debug_opts=debug_opts)
-
-    # ------------------------------------------------------------------------------------------------------------------
+       # ------------------------------------------------------------------------------------------------------------------
     # CALL SOLVER ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -286,6 +288,9 @@ def main(track_opts: dict,
             sa_iter = np.zeros(len_results)
             sa_mass = np.zeros(len_results)
             sa_c_d = np.zeros(len_results)
+            sa_total_laps = np.zeros(len_results)
+            sa_race_sim_results = []
+
 
             iter = 0
             for j, cur_cd in enumerate(sa_range_2):
@@ -309,6 +314,18 @@ def main(track_opts: dict,
                     if solver_opts["series"] == "FE":
                         # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
                         sa_fuel_cons[iter] = lap.e_cons_cl[-1] 
+ 
+                    # Create complete race simulation object
+                    race_sim = RaceSim(pit_time=race_characteristics["pit_time"],
+                                       gwc_times=race_characteristics["gwc_times"],
+                                       lap_time=lap.t_cl[-1],
+                                       energy_per_lap=lap.e_cons_cl[-1],
+                                       battery_capacity=car.battery_capacity)
+                    race_sim.calculate()
+
+                    sa_race_sim_results.append(race_sim)
+                    sa_total_laps[iter] = race_sim.total_laps
+
 
                     iter += 1
 
@@ -366,7 +383,8 @@ def main(track_opts: dict,
         c_d_tag = "Cd(c_w_a)"
         laptime_tag = "laptime (s)"
         energy_tag = "energy (kJ)"
-        header_row = [iter_tag, vehicle_tag, mass_tag, c_d_tag, laptime_tag, energy_tag]
+        total_laps_tag = "total laps"
+        header_row = [iter_tag, vehicle_tag, mass_tag, c_d_tag, laptime_tag, energy_tag, total_laps_tag]
 
         with open(resultsfile, 'a') as csvfile:
             csvwriter = csv.writer(csvfile)
@@ -377,7 +395,8 @@ def main(track_opts: dict,
                                     [("%.1f" %  sa_mass[i])] +          
                                     [("%.3f" %  sa_c_d[i])] +          
                                     [("%.3f" %  sa_t_lap[i])] +
-                                    [("%.2f" %  (sa_fuel_cons[i] / 1000.0))])
+                                    [("%.2f" %  (sa_fuel_cons[i] / 1000.0))]+
+                                    [sa_total_laps[i]])
 
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
                                track_opts["trackname"].lower() + "_" +
@@ -453,9 +472,11 @@ def main(track_opts: dict,
             # Good oold data mainpulation to get it graphing            
             Laptime_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], laptime_tag: sa_t_lap[:]})
             Energy_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], energy_tag: sa_fuel_cons[:]})
+            total_laps_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], total_laps_tag: sa_total_laps[:]})
 
             Energy_array = Energy_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=energy_tag).T.values
             Laptime_array = Laptime_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=laptime_tag).T.values
+            total_laps_array = total_laps_dataframe.pivot_table(index=mass_tag, columns=c_d_tag, values=total_laps_tag).T.values
 
             mass_unique = np.sort(np.unique(sa_mass))
             c_d_unique = np.sort(np.unique(sa_c_d))
@@ -477,7 +498,16 @@ def main(track_opts: dict,
             ax2.set_zlabel('Lap Time (sec)')
             ax2.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
             ax2.plot_surface(mass_array, c_d_array, Laptime_array)
+ 
+            fig3 = plt.figure()
+            ax3 = fig3.add_subplot(111,projection='3d')
+            ax3.set_xlabel('Mass (kg)')
+            ax3.set_ylabel('Coeff of Drag - Cd')
+            ax3.set_zlabel('Total Laps')
+            ax3.set_title('Total Laps\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
+            ax3.plot_surface(mass_array, c_d_array, total_laps_array)
             plt.show()
+
     # ------------------------------------------------------------------------------------------------------------------
     # CI TESTING -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -515,6 +545,8 @@ if __name__ == '__main__':
 
     debug_opts_ = config["debug_opts_"]
 
+    race_characteristics_ = config["race_characteristics_"]
+
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -523,4 +555,5 @@ if __name__ == '__main__':
          solver_opts=solver_opts_,
          driver_opts=driver_opts_,
          sa_opts=sa_opts_,
-         debug_opts=debug_opts_)
+         debug_opts=debug_opts_,
+         race_characteristics=race_characteristics_)
