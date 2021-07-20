@@ -217,6 +217,9 @@ def main(track_opts: dict,
         if sa_opts["range_2"] is not None:
              sa_range_2 = np.linspace(sa_opts["range_2"][0], sa_opts["range_2"][1], sa_opts["range_2"][2])
 
+        if sa_opts["range_3"] is not None:
+             sa_range_3 = np.linspace(sa_opts["range_3"][0], sa_opts["range_3"][1], sa_opts["range_3"][2])
+
         # perform analysis
         if sa_opts["sa_type"] == "mass":
             sa_t_lap = np.zeros(sa_opts["range_1"][2])
@@ -242,15 +245,17 @@ def main(track_opts: dict,
 
         # perform eLemons analysis
         elif sa_opts["sa_type"] == "elemons_mass":
- 
             # initialize this pass variables that collect results
-            #len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2]
             len_results = sa_opts["range_1"][2] 
             sa_t_lap = np.zeros(len_results)
             sa_fuel_cons = np.zeros(len_results)
             sa_iter = np.zeros(len_results)
             sa_mass = np.zeros(len_results)
+            sa_torque = np.zeros(len_results)
+ 
             sa_c_d = np.zeros(len_results)
+            sa_total_laps = np.zeros(len_results)
+            sa_race_sim_results = []
 
             for i, cur_mass in enumerate(sa_range_1):
                 print("SA: Starting solver run (%i)" % (i + 1))
@@ -265,6 +270,7 @@ def main(track_opts: dict,
                 sa_t_lap[i] = lap.t_cl[-1]
                 sa_iter[i] = i
                 sa_mass[i] = cur_mass
+                sa_torque[i] = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
                 sa_c_d[i] = lap.driverobj.carobj.pars_general["c_w_a"] 
                 sa_t_lap[i] = lap.t_cl[-1]
                 sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
@@ -272,7 +278,20 @@ def main(track_opts: dict,
                     # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
                     sa_fuel_cons[i] = lap.e_cons_cl[-1] 
 
+                race_sim = RaceSim(pit_time=race_characteristics["pit_time"],
+                                    gwc_times=race_characteristics["gwc_times"],
+                                    lap_time=lap.t_cl[-1],
+                                    energy_per_lap=lap.e_cons_cl[-1],
+                                    battery_capacity=car.battery_capacity)
+                race_sim.calculate()
+            
+                sa_race_sim_results.append(race_sim)
+                sa_total_laps[i] = race_sim.total_laps
+
+
+                
                 # reset lap
+
                 lap.reset_lap()
 
                 print("SA: Finished solver run (%i)" % (i + 1))
@@ -288,9 +307,9 @@ def main(track_opts: dict,
             sa_iter = np.zeros(len_results)
             sa_mass = np.zeros(len_results)
             sa_c_d = np.zeros(len_results)
+            sa_torque = np.zeros(len_results)
             sa_total_laps = np.zeros(len_results)
             sa_race_sim_results = []
-
 
             iter = 0
             for j, cur_cd in enumerate(sa_range_2):
@@ -305,7 +324,7 @@ def main(track_opts: dict,
 
                     # simulate lap and save lap time
                     lap.simulate_lap()
-
+                    sa_torque[iter] = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
                     sa_fuel_cons[iter] = lap.fuel_cons_cl[-1]
                     sa_t_lap[iter] = lap.t_cl[-1]
                     sa_iter[iter] = iter + 1
@@ -326,11 +345,70 @@ def main(track_opts: dict,
                     sa_race_sim_results.append(race_sim)
                     sa_total_laps[iter] = race_sim.total_laps
 
-
                     iter += 1
 
                     lap.reset_lap()
-    
+        elif sa_opts["sa_type"] == "elemons_mass_cd_torque":
+
+            # initialize this pass variables that collect results
+            len_results = sa_opts["range_1"][2] * sa_opts["range_2"][2] * \
+                sa_opts["range_3"][2]
+            print("len_results: {}".format(len_results))
+            sa_t_lap = np.zeros(len_results)
+            sa_fuel_cons = np.zeros(len_results)
+            sa_iter = np.zeros(len_results)
+            sa_mass = np.zeros(len_results)
+            sa_c_d = np.zeros(len_results)
+            sa_torque = np.zeros(len_results)
+            sa_total_laps = np.zeros(len_results)
+            sa_race_sim_results = []
+
+
+            iter = 0
+            for j, cur_cd in enumerate(sa_range_2):
+                # change coeff of drag of vehicle
+                lap.driverobj.carobj.pars_general["c_w_a"] = cur_cd
+
+                for i, cur_mass in enumerate(sa_range_1):
+                    # change mass of vehicle
+                    lap.driverobj.carobj.pars_general["m"] = cur_mass
+                    
+                    for k, curr_max_torque in enumerate(sa_range_3):
+                        print("\nSA: Starting solver run {}".format(iter))
+
+                        lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = curr_max_torque
+
+                        # simulate lap and save lap time
+                        lap.simulate_lap()
+
+                        sa_fuel_cons[iter] = lap.fuel_cons_cl[-1]
+                        sa_t_lap[iter] = lap.t_cl[-1]
+                        sa_iter[iter] = iter + 1
+                        sa_mass[iter] = cur_mass
+                        sa_c_d[iter] = cur_cd
+                        sa_torque[iter] = curr_max_torque
+                        if solver_opts["series"] == "FE":
+                            # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
+                            sa_fuel_cons[iter] = lap.e_cons_cl[-1] 
+                        
+                        # Create complete race simulation object
+                        race_sim = RaceSim(pit_time=race_characteristics["pit_time"],
+                                           gwc_times=race_characteristics["gwc_times"],
+                                           lap_time=lap.t_cl[-1],
+                                           energy_per_lap=lap.e_cons_cl[-1],
+                                           battery_capacity=car.battery_capacity)
+
+                        race_sim.calculate()
+
+                        sa_race_sim_results.append(race_sim)
+                        sa_total_laps[iter] = race_sim.total_laps
+
+
+
+                        iter += 1
+
+                        lap.reset_lap()
+        
     # ------------------------------------------------------------------------------------------------------------------
     # EXPORT -----------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -377,27 +455,37 @@ def main(track_opts: dict,
             pass
             # TODO: implementation of COG and aero variation missing
     if debug_opts["use_elemons_result"]:
+        total_laps_tag = "total laps"
         iter_tag = "iteration"
         vehicle_tag = "vehicle"
         mass_tag = "mass (kg)"
+        max_motor_torque_tag = "max motor torque (Nm)"
         c_d_tag = "Cd(c_w_a)"
         laptime_tag = "laptime (s)"
         energy_tag = "energy (kJ)"
-        total_laps_tag = "total laps"
-        header_row = [iter_tag, vehicle_tag, mass_tag, c_d_tag, laptime_tag, energy_tag, total_laps_tag]
+        header_row = [iter_tag, vehicle_tag, mass_tag,
+                      c_d_tag, max_motor_torque_tag, 
+                      laptime_tag, energy_tag, total_laps_tag]
 
-        with open(resultsfile, 'a') as csvfile:
-            csvwriter = csv.writer(csvfile)
-            csvwriter.writerow(header_row)
-            for i in range(len(sa_t_lap)):
-                csvwriter.writerow([sa_iter[i]] +
-                                    [solver_opts["vehicle"]] + 
-                                    [("%.1f" %  sa_mass[i])] +          
-                                    [("%.3f" %  sa_c_d[i])] +          
-                                    [("%.3f" %  sa_t_lap[i])] +
-                                    [("%.2f" %  (sa_fuel_cons[i] / 1000.0))]+
-                                    [sa_total_laps[i]])
+        if sa_opts["sa_type"] == "elemons_mass" or \
+            sa_opts["sa_type"] == "elemons_mass_cd" or \
+            sa_opts["sa_type"] == "elemons_mass_cd_torque":
 
+            with open(resultsfile, 'a') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerow(header_row)
+                for i in range(len(sa_t_lap)):
+                    try:
+                        csvwriter.writerow([sa_iter[i], solver_opts["vehicle"], 
+                                        ("%.1f" %  sa_mass[i]), ("%.3f" %  sa_c_d[i]),          
+                                        ("%.0f" %  sa_torque[i]), ("%.3f" %  sa_t_lap[i]),
+                                        ("%.2f" %  (sa_fuel_cons[i] / 1000.0)),
+                                        ("%.0f" %  sa_total_laps[i])])
+                    except TypeError as e:
+                        print(e)
+                        print(i)
+                        print(type(i))
+ 
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
                                track_opts["trackname"].lower() + "_" +
                                solver_opts["vehicle"].lower() + ".csv")
@@ -469,7 +557,8 @@ def main(track_opts: dict,
             plt.show()
 
         elif sa_opts["sa_type"] == "elemons_mass_cd":
-            # Good oold data mainpulation to get it graphing            
+            # Good old data mainpulation to get it graphing. I did this with 
+            # lots of googling on stack exchange            
             Laptime_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], laptime_tag: sa_t_lap[:]})
             Energy_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], energy_tag: sa_fuel_cons[:]})
             total_laps_dataframe = pd.DataFrame({mass_tag: sa_mass[:], c_d_tag: sa_c_d[:], total_laps_tag: sa_total_laps[:]})
@@ -508,6 +597,29 @@ def main(track_opts: dict,
             ax3.plot_surface(mass_array, c_d_array, total_laps_array)
             plt.show()
 
+        elif sa_opts["sa_type"] == "elemons_mass_cd_torque":
+            # https://stackoverflow.com/questions/14995610/how-to-make-a-4d-plot-with-matplotlib-using-arbitrary-data
+            # graph mass and cd vs energy consumption/time at each max torque
+            fig = plt.figure()
+            fig2 = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax2 = fig2.add_subplot(111, projection='3d')
+
+            ax.set_xlabel("Mass (kg)")
+            ax.set_ylabel("C_d")
+            ax.set_zlabel("Max Torque")
+            ax.set_title("Energy Consumption (J) vs \n Mass, C_d, Max_torque")
+            ax2.set_xlabel("Mass (kg)")
+            ax2.set_ylabel("C_d")
+            ax2.set_zlabel("Max Torque")
+            ax2.set_title("Time of lap (s) vs \n Mass, C_d, Max_torque")
+
+
+            img = ax.scatter(sa_mass, sa_c_d, sa_torque, c=sa_fuel_cons, cmap=plt.hot())
+            img2 = ax2.scatter(sa_mass, sa_c_d, sa_torque, c=sa_t_lap, cmap=plt.hot())
+            fig.colorbar(img)
+            fig2.colorbar(img2)
+            plt.show()
     # ------------------------------------------------------------------------------------------------------------------
     # CI TESTING -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -539,8 +651,12 @@ if __name__ == '__main__':
     driver_opts_ = config["driver_opts_"]
     
     # These are because of this bug: https://github.com/uiri/toml/issues/270
-    config["sa_opts_"]["range_1"][2] = int(config["sa_opts_"]["range_1"][2])
-    config["sa_opts_"]["range_2"][2] = int(config["sa_opts_"]["range_2"][2])
+    if config["sa_opts_"]["range_1"] is not None:
+        config["sa_opts_"]["range_1"][2] = int(config["sa_opts_"]["range_1"][2])
+    if config["sa_opts_"]["range_3"] is not None:
+        config["sa_opts_"]["range_2"][2] = int(config["sa_opts_"]["range_2"][2])
+    if config["sa_opts_"]["range_3"] is not None:
+        config["sa_opts_"]["range_3"][2] = int(config["sa_opts_"]["range_3"][2])
     sa_opts_ = config["sa_opts_"]
 
     debug_opts_ = config["debug_opts_"]
