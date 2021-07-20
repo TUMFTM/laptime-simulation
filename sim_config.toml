@@ -88,7 +88,7 @@
 #                  for 2 days would be [540, 540] 
 
 [race_characteristics_]
-    pit_time = 5
+    pit_time = 10
     gwc_times = [360, 360]
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
@@ -101,7 +101,7 @@
 # 'mass'                    vehicle mass         not used
 # 'areo'                    feature not implement 
 # 'cog'                     feature not implement 
-# 'elemons-mass'            vehicle mass         not used - set to 'None' without quotes 
+# 'elemons_mass'            vehicle mass         not used - set to 'None' without quotes 
 # 'elemons_mass_cd'         vehicle mass         Cd c_w_a (coefficient of drag)
 # 'elemons_mass_cd_torque'  vehicle mass         Cd c_w_a (coefficient of drag) torque_e_motor_max 
 [sa_opts_]

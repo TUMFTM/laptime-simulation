@@ -398,11 +398,12 @@ def main(track_opts: dict,
                                            energy_per_lap=lap.e_cons_cl[-1],
                                            battery_capacity=car.battery_capacity)
 
+                        race_sim.calculate()
+
                         sa_race_sim_results.append(race_sim)
                         sa_total_laps[iter] = race_sim.total_laps
 
 
-                        race_sim.calculate()
 
                         iter += 1
 
@@ -478,7 +479,8 @@ def main(track_opts: dict,
                         csvwriter.writerow([sa_iter[i], solver_opts["vehicle"], 
                                         ("%.1f" %  sa_mass[i]), ("%.3f" %  sa_c_d[i]),          
                                         ("%.0f" %  sa_torque[i]), ("%.3f" %  sa_t_lap[i]),
-                                        ("%.2f" %  (sa_fuel_cons[i] / 1000.0))])
+                                        ("%.2f" %  (sa_fuel_cons[i] / 1000.0)),
+                                        ("%.0f" %  sa_total_laps[i])])
                     except TypeError as e:
                         print(e)
                         print(i)
