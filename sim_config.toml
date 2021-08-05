@@ -93,23 +93,22 @@
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
 # use_sa:   switch to deactivate sensitivity analysis
-# sa_type:  'mass', 'aero', 'cog' 'elemons-mass'
-# range_1:  range of parameter variation [start, end, number of steps]
-# range_2:  range of parameter variation [start, end, number of steps]
+# sa_type:  'elemons_mass', 'elemons_mass_cd', 'elemons_mass_cd_torque'
+# range layout:  range of parameter variation [start, end, number of steps]
+# range names: mass, c_d, torque
 # RMH Note:
 #  sa_type                  Range 1 variable     Range 2 variable               Range 3
-# 'mass'                    vehicle mass         not used
-# 'areo'                    feature not implement 
-# 'cog'                     feature not implement 
 # 'elemons_mass'            vehicle mass         not used - set to 'None' without quotes 
 # 'elemons_mass_cd'         vehicle mass         Cd c_w_a (coefficient of drag)
 # 'elemons_mass_cd_torque'  vehicle mass         Cd c_w_a (coefficient of drag) torque_e_motor_max 
+# to set which ranges are used in the simulation set the 'sa_type' variable according
+# to the value in the table directly above. You can leave the ranges in this file that are unused
 [sa_opts_]
     use_sa = true
     sa_type = "elemons_mass_cd_torque"
-    range_1 = [400.0, 1200.0, 5.0] # note that the last value needs to be a int after parsed, see bug below
-    range_2 = [1.10, 1.50, 5.0] # same as above
-    range_3 = [20.0, 200.0, 5.0]  # same note as above
+    mass = [400.0, 1200.0, 5.0] # note that the last value needs to be a int after parsed, see bug below
+    c_d = [1.10, 1.50, 5.0] # same as above
+    torque = [20.0, 200.0, 5.0]  # same note as above
 # https://github.com/uiri/toml/issues/270
 
 # debug options ----------------------------------------------------------------------------------------------------
@@ -123,7 +122,7 @@
 [debug_opts_]
     use_plot = false
     use_debug_plots = false
-    use_plot_comparison_tph = true
-    use_print = true
+    use_plot_comparison_tph = false
+    use_print = false
     use_print_result = true
     use_elemons_result = true

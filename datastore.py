@@ -113,7 +113,6 @@ class DataStore():
                                                   )
         self.results_list = []
 
-
         self.results_file_writer.writeheader()
 
         self.input_data_ranges = {}
