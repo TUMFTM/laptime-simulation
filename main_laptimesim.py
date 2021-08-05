@@ -10,6 +10,16 @@ import csv
 from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 import toml
+from datastore import (DataStore,
+                       TOTAL_LAPS_TAG,
+                       ITER_TAG,
+                       VEHICLE_TAG,
+                       MASS_TAG,
+                       MAX_MOTOR_TORQUE_TAG,
+                       C_D_TAG,
+                       LAP_ENERGY_TAG,
+                       LAPTIME_TAG
+                    )
 
 from race_sim import RaceSim
 
@@ -199,10 +209,13 @@ def main(track_opts: dict,
             lap.plot_enginespeed_gears()
 
     else:
+
+
         # output file 
         print("in else")
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
+        datastore = DataStore(results_file_name=resultsfile)
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
@@ -245,38 +258,25 @@ def main(track_opts: dict,
 
         # perform eLemons analysis
         elif sa_opts["sa_type"] == "elemons_mass":
-            # initialize this pass variables that collect results
-            len_results = sa_opts["range_1"][2] 
-            sa_t_lap = np.zeros(len_results)
-            sa_fuel_cons = np.zeros(len_results)
-            sa_iter = np.zeros(len_results)
-            sa_mass = np.zeros(len_results)
-            sa_torque = np.zeros(len_results)
- 
-            sa_c_d = np.zeros(len_results)
-            sa_total_laps = np.zeros(len_results)
-            sa_race_sim_results = []
 
-            for i, cur_mass in enumerate(sa_range_1):
+            c_d = lap.driverobj.carobj.pars_general["c_w_a"] 
+            max_torque = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
+
+            datastore.add_sa_input_variables({MASS_TAG: sa_opts["range_1"]})
+            datastore.add_static_input_variables({MAX_MOTOR_TORQUE_TAG: max_torque,
+                                                  C_D_TAG: c_d})
+            
+            datastore.generate_unique_sa_combinations()
+
+            for i, single_simulation_data in datastore.single_iteration_data.items():
                 print("SA: Starting solver run (%i)" % (i + 1))
 
                 # change mass of vehicle
-                lap.driverobj.carobj.pars_general["m"] = cur_mass
-
+                lap.driverobj.carobj.pars_general["m"] = single_simulation_data.vehicle_mass
+                lap.driverobj.carobj.pars_general["c_w_a"] = single_simulation_data.vehicle_c_d
+                lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = single_simulation_data.vehicle_max_torque
                 # simulate lap and save lap time
                 lap.simulate_lap()
-                
-                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
-                sa_t_lap[i] = lap.t_cl[-1]
-                sa_iter[i] = i
-                sa_mass[i] = cur_mass
-                sa_torque[i] = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
-                sa_c_d[i] = lap.driverobj.carobj.pars_general["c_w_a"] 
-                sa_t_lap[i] = lap.t_cl[-1]
-                sa_fuel_cons[i] = lap.fuel_cons_cl[-1]
-                if solver_opts["series"] == "FE":
-                    # RMH for formula E (electric) vehicles overide gas fuel and publish electrical energy'
-                    sa_fuel_cons[i] = lap.e_cons_cl[-1] 
 
                 race_sim = RaceSim(pit_time=race_characteristics["pit_time"],
                                     gwc_times=race_characteristics["gwc_times"],
@@ -284,12 +284,10 @@ def main(track_opts: dict,
                                     energy_per_lap=lap.e_cons_cl[-1],
                                     battery_capacity=car.battery_capacity)
                 race_sim.calculate()
-            
-                sa_race_sim_results.append(race_sim)
-                sa_total_laps[i] = race_sim.total_laps
 
-
-                
+                datastore.single_iteration_data[i].set_results(lap_time=lap.t_cl[-1],
+                                                               total_laps=race_sim.total_laps,
+                                                               energy_per_lap=lap.e_cons_cl[-1])
                 # reset lap
 
                 lap.reset_lap()
@@ -467,24 +465,23 @@ def main(track_opts: dict,
                       c_d_tag, max_motor_torque_tag, 
                       laptime_tag, energy_tag, total_laps_tag]
 
-        if sa_opts["sa_type"] == "elemons_mass" or \
-            sa_opts["sa_type"] == "elemons_mass_cd" or \
-            sa_opts["sa_type"] == "elemons_mass_cd_torque":
+        # if sa_opts["sa_type"] == "elemons_mass" or \
+        #     sa_opts["sa_type"] == "elemons_mass_cd" or \
+        #     sa_opts["sa_type"] == "elemons_mass_cd_torque":
 
-            with open(resultsfile, 'a') as csvfile:
-                csvwriter = csv.writer(csvfile)
-                csvwriter.writerow(header_row)
-                for i in range(len(sa_t_lap)):
-                    try:
-                        csvwriter.writerow([sa_iter[i], solver_opts["vehicle"], 
-                                        ("%.1f" %  sa_mass[i]), ("%.3f" %  sa_c_d[i]),          
-                                        ("%.0f" %  sa_torque[i]), ("%.3f" %  sa_t_lap[i]),
-                                        ("%.2f" %  (sa_fuel_cons[i] / 1000.0)),
-                                        ("%.0f" %  sa_total_laps[i])])
-                    except TypeError as e:
-                        print(e)
-                        print(i)
-                        print(type(i))
+        #     with open(resultsfile, 'a') as csvfile:
+        #         csvwriter = csv.writer(csvfile)
+        #         csvwriter.writerow(header_row)
+        #         for i in range(len(sa_t_lap)):
+        #             try:
+        #                 csvwriter.writerow([sa_iter[i], solver_opts["vehicle"], 
+        #                                 ("%.1f" %  sa_mass[i]), ("%.3f" %  sa_c_d[i]),          
+        #                                 ("%.0f" %  sa_torque[i]), ("%.3f" %  sa_t_lap[i]),
+        #                                 ("%.2f" %  (sa_fuel_cons[i] / 1000.0))])
+        #             except TypeError as e:
+        #                 print(e)
+        #                 print(i)
+        #                 print(type(i))
  
     output_path = os.path.join(output_path_velprofile, "velprofile_" + 
                                track_opts["trackname"].lower() + "_" +
@@ -504,6 +501,8 @@ def main(track_opts: dict,
             lap.plot_overview()
             # lap.plot_revs_gears()
     else:
+        sa_t_lap, sa_fuel_cons, sa_iter, sa_mass, sa_c_d, sa_torque, sa_total_laps = datastore.get_graph_data()
+        
         if sa_opts["sa_type"] == "mass":
             # lap time
             fig = plt.figure()
@@ -533,9 +532,7 @@ def main(track_opts: dict,
             # lap time
             fig = plt.figure()
             ax = fig.add_subplot(111)
-            ax.plot(sa_range_1, sa_t_lap, "x")
-            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
-            ax.set_ylim(sa_t_lap[0], sa_t_lap[-1])
+            ax.plot(sa_mass, sa_t_lap, "x")
             ax.set_title("SA of lap time to mass")
             ax.set_xlabel("mass m in kg")
             ax.set_ylabel("lap time t in s")
@@ -546,9 +543,7 @@ def main(track_opts: dict,
             # fuel (energy) consumption
             fig = plt.figure()
             ax = fig.add_subplot(111)
-            ax.plot(sa_range_1, sa_fuel_cons, "x")
-            ax.set_xlim(sa_range_1[0], sa_range_1[-1])
-            ax.set_ylim(sa_fuel_cons[0], sa_fuel_cons[-1])
+            ax.plot(sa_mass, sa_fuel_cons, "x")
             ax.set_title("SA of energy consumption to mass")
             ax.set_xlabel("mass m in kg")
             ax.set_ylabel("energy consumption in kJ/lap")

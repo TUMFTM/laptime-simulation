@@ -8,6 +8,8 @@ import threading
 import csv
 import numpy as np
 import itertools
+import os
+
 
 TOTAL_LAPS_TAG = "total laps"
 ITER_TAG = "iteration"
@@ -72,8 +74,8 @@ class SingleIterationData():
             raise("Iteration is not complete, must set results first")
 
 
-class dataStore():
-    def __init__(self):
+class DataStore():
+    def __init__(self, results_file_name):
         """ Initialize datastore and start output file
         
         This datastore is intended to be the main interaction to
@@ -99,18 +101,20 @@ class dataStore():
         3. create all input variable combinations 
         4. Run simulations by accessing each iterations data in SingleIterationData class,
         add results data back to SingleIterationData class
+
+        Inputs:
+            - results_file_name (str): file name for output file 
         """
 
-        results_filename = "./race-sim-results-{}".format(datetime.now.utc())
-
-        self.add_results_lock = threading.lock()
-        results_file = open(results_filename, "w")
+        self.add_results_lock = threading.Lock()
+        results_file = open(results_file_name, "w", newline='')
         self.results_file_writer = csv.DictWriter(results_file,
-                                                  fieldnames=HEADER_ROW)
+                                                  fieldnames=HEADER_ROW,
+                                                  )
         self.results_list = []
 
-        with self.results_file_lock:
-            self.results_file_writer.writeheader()
+
+        self.results_file_writer.writeheader()
 
         self.input_data_ranges = {}
         self.single_iteration_data = {}
@@ -136,7 +140,7 @@ class dataStore():
             - Exception on invalid data names being passed in
         
         """
-        for key, value in input_variables:
+        for key, value in input_variables.items():
             if key not in REQUIRED_INPUTS:
                 raise("invalid key passed in")
             # create a "sa_range" list like other variables that
@@ -167,7 +171,8 @@ class dataStore():
             - Exception on invalid data names being passed in
         
         """
-        for key, value in sa_opts_ranges:
+        print(sa_opts_ranges)
+        for key, value in sa_opts_ranges.items():
             if key not in REQUIRED_INPUTS:
                 raise("invalid key passed in")
             if len(value) != 3:
@@ -212,7 +217,7 @@ class dataStore():
         # 1
         sa_opts_explicit_values = []
         sa_opts_names = []
-        for key, sa_range in self.input_data_ranges:
+        for key, sa_range in self.input_data_ranges.items():
             entry_explicit_values = np.linspace(sa_range[0],
                                                 sa_range[1],
                                                 sa_range[2])
@@ -248,14 +253,14 @@ class dataStore():
             for j, variable_name in enumerate(sa_opts_names):
                 input_vars[variable_name] = entry[j]
 
-            iteration_data = SingleIterationData(iteration=i,
+            iteration_data = SingleIterationData(iteration_number=i,
                                                  vehicle_name="FIXME",
                                                  vehicle_mass=input_vars[MASS_TAG],
                                                  vehicle_c_d=input_vars[C_D_TAG],
                                                  vehicle_max_torque=input_vars[MAX_MOTOR_TORQUE_TAG]
                                                 )
             self.single_iteration_data[i] = iteration_data
-            self._total_iterations = i
+            self._total_iterations = i + 1 # enumerate is 0 based
 
 
     def set_single_iteration_results(self, iteration, lap_time, lap_energy, total_laps):
@@ -273,19 +278,18 @@ class dataStore():
         
         Raises: Nothing
         """
-        self.single_iteration_data[iteration].set_results(lap_time=lap_time,
-                                                          energy_per_lap=lap_energy,
-                                                          total_laps=total_laps)
-
-        # Write results to file
-        # this should work magically because the csv writer is type DictWriter
-        # all data should be in the properly labeled columns
         with self.add_results_lock:
+            self.single_iteration_data[iteration].set_results(lap_time=lap_time,
+                                                              energy_per_lap=lap_energy,
+                                                              total_laps=total_laps)
+
+            # Write results to file
+            # this should work magically because the csv writer is type DictWriter
+            # all data should be in the properly labeled columns
+
             results = self.single_iteration_data[iteration].get_results()
             self.results_file_writer.writerow(results)
-            
-            
-        # write results to results list
+
 
     def get_graph_data(self):
         """ Method to return data that is graphable
@@ -304,16 +308,17 @@ class dataStore():
         sa_torque = np.zeros(self._total_iterations)
         sa_total_laps = np.zeros(self._total_iterations)
 
-        for key, single_iteration_data in self.single_iteration_data:
-            iteration_results = single_iteration_data.get_results()
-
-            sa_t_lap[key] = iteration_results[LAPTIME_TAG]
-            sa_fuel_cons[key] = iteration_results[LAP_ENERGY_TAG]
-            sa_iter[key] = iteration_results[ITER_TAG]
-            sa_mass[key] = iteration_results[MASS_TAG]
-            sa_c_d[key] = iteration_results[C_D_TAG]
-            sa_torque[key] = iteration_results[MAX_MOTOR_TORQUE_TAG]
-            sa_total_laps[key] = iteration_results[TOTAL_LAPS_TAG]
-        
+        with self.add_results_lock:
+            for key, single_iteration_data in self.single_iteration_data.items():
+                iteration_results = single_iteration_data.get_results()
+                key = key - 1
+                sa_t_lap[key] = iteration_results[LAPTIME_TAG]
+                sa_fuel_cons[key] = iteration_results[LAP_ENERGY_TAG]
+                sa_iter[key] = iteration_results[ITER_TAG]
+                sa_mass[key] = iteration_results[MASS_TAG]
+                sa_c_d[key] = iteration_results[C_D_TAG]
+                sa_torque[key] = iteration_results[MAX_MOTOR_TORQUE_TAG]
+                sa_total_laps[key] = iteration_results[TOTAL_LAPS_TAG]
+ 
         return sa_t_lap, sa_fuel_cons, sa_iter, sa_mass, sa_c_d, sa_torque, sa_total_laps
 
