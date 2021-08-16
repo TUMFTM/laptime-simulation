@@ -86,14 +86,12 @@
     lift_coast_dist = 10.0
 
 # race characteristics --------------------------------------------------------------------------------------------
-# pit_time:  [m] time penalty per pit stop
-# gwc_times:   [m] list, minutes the track is hot on each race day "gwc" stands for green-white-chequered for the flag pattern
+# gwc_times: [m] list, minutes the track is hot on each race day "gwc" stands for green-white-chequered for the flag pattern
 #                  used to signal the beginning and end of the race.
 #                  For each race day in an event put the number of minutes each day into the list, a race that is 9am to 5pm 
 #                  for 2 days would be [540, 540] 
 
 [race_characteristics_]
-    pit_time = 10
     gwc_times = [360, 360]
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
@@ -110,11 +108,8 @@
 # to the value in the table directly above. You can leave the ranges in this file that are unused
 [sa_opts_]
     use_sa = true
-    sa_type = "elemons_mass_cd_torque"
-    mass = [400.0, 1200.0, 5.0] # note that the last value needs to be a int after parsed, see bug below
-    c_d = [1.10, 1.50, 5.0] # same as above
-    torque = [20.0, 200.0, 5.0]  # same note as above
-# https://github.com/uiri/toml/issues/270
+    sa_type = "elemons"
+
 
 # debug options ----------------------------------------------------------------------------------------------------
 # use_plot:                 plot results
@@ -131,3 +126,140 @@
     use_print = false
     use_print_result = true
     use_elemons_result = true
+
+# car property options -----------------------------------------
+# The values here are reperesentative of the car model defined in the following
+# references and are used in the race_car_model.py file:
+# https://docs.google.com/presentation/d/1Fe2ebMumncOxJ_XGSEA_o8PTu6qjORcLRfJFTbei6lo/edit#slide=id.p
+# https://docs.google.com/document/d/1X2Aovz6VcKqkIUcsu5Z-QPbyDjBc7IG8CdWpZJr58eI/edit#
+
+
+# INDEPENDENT VARIABLES
+# Independent Variables can either be a single float value or a 
+# list of 3 float values which represent a range of values to iterate over
+# format [min_value, max_value, number_of_steps]
+
+# battery_size:         battery size in kWh
+# motor_max_torque:     maximum continuous motor torque in Nm
+# gross_vehicle_weight: vehicle weight from factory in kg
+# weight_reduction:     weight reduced from removing unnecessary car components in kg
+# coefficient_of_drag:  coefficient of drag of car (unitless)]
+
+# RELATIONSHIP VARIABLES
+# Relationship variables must be a single float value and represent
+# relationships between different car properties
+# battery_mass_pit_factor:          how long to pit per kg of battery (minutes/kg)
+# battery_energy_density:           energy density of battery kWh/kg
+# motor_constant:                   motor constant of motor Nm/sqrt(W)
+# motor_torque_density:             torque per kilogram of motor (Nm/kg)
+# max_vehicle_weight_ratio:         rules based maximum weight of vehicle based on gvw (unitless)
+# car_density:                      density of car (kg/m^3)
+# chassis_battery_mass_factor:      ratio of supporting chassis mass per battery mass (kg/kg)
+# chassis_motor_mass_factor:        ratio of supporting chassis mass per motor mass (kg/kg)
+# rolling_resistance_mass_factor:   ratio of rolling resistance increase per kg of total vehicle mass (1/kg)
+
+[car_properties_]
+    [car_properties_.independent_variables]
+        battery_size = [10.0, 100.0, 10.0]
+        motor_max_torque = [100.0, 300.0, 10.0]
+        gross_vehicle_weight = 1200
+        weight_reduction = 200
+        coefficient_of_drag = 0.3
+    
+    [car_properties_.relationship_variables]
+        battery_energy_density = 0.5  # kWh/kg
+        battery_mass_pit_factor = 0.01  # 5 minutes for 500kg battery
+        motor_constant = 3
+        motor_torque_density = 5
+        max_vehicle_weight_ratio = 1.25  # determined by rules
+        car_density = 100
+        chassis_battery_mass_factor = 0.05
+        chassis_motor_mass_factor = 0.05
+        rolling_resistance_mass_factor = 0.00001 #0.01/1000
+    
+# vehicle parameters ----------------------------------------------------------------------------------------------------------------------
+# Initial vehicle parameters to set, the data structure is what the simulation came with
+# and is copied direcly from the FE_Berlin.ini file
+# [VEH_PARS]
+
+# powertrain_type:              electric, hybrid, combustion
+
+# lf:                           [m] x distance front axle to center of gravity
+# lr:                           [m] x distance rear axle to center of gravity
+# h_cog:                        [m] height of center of gravity
+# sf:                           [m] track width front
+# sr:                           [m] track width rear
+# m:                            [kg] vehicle mass inlcuding driver excluding fuel (FE minimum 880kg)
+# f_roll:                       [-] rolling resistance coefficient
+# c_w_a:                        [m^2] c_w * A_car -> air resistance calculation
+# c_z_a_f:                      [m^2] c_z_f * A_frontwing
+# c_z_a_r:                      [m^2] c_z_r * A_rearwing
+# g:                            [m/s^2]
+# rho_air:                      [kg/m^3] air density
+# drs_factor:                   [-] part of reduction of air resistance by DRS
+
+# topology:                     [-] RWD or AWD or FWD
+# pow_e_motor:                  [W] total electric motor power (after efficiency losses)
+# eta_e_motor:                  [-] efficiency electric motor (drive)
+# eta_e_motor_re:               [-] efficiency electric motor (recuperation)
+# torque_e_motor_max:           [Nm] maximum torque of electric motor (after efficiency losses)
+
+# keep attention on the direction of the values, i.e. i_trans is from tire to engine!
+# i_trans:                      [-] gear ratio
+# n_shift:                      [1/min] shift rpm
+# e_i:                          [-] torsional mass factor
+# eta_g:                        [-] efficiency of gearbox/transmission
+
+# tire data should be normalized to mu = 1.0 (coefficient of friction of the track / tire test bench)
+# circ_ref:                     [m] loaded reference circumreference
+# fz_0:                         [N] nominal tire load
+# mux:                          [-] corresponds to the coefficient of friction at nominal tire load (fz == fz_0)
+# muy:                          [-] corresponds to the coefficient of friction at nominal tire load (fz == fz_0)
+# dmux_dfz:                     [-] reduction of force potential with rising tire load (fz > fz_0) -> negative value!
+# dmuy_dfz:                     [-] reduction of force potential with rising tire load (fz > fz_0) -> negative value!
+# tire_model_exp:               [-] exponent used in the tire model to adjust shape of friction "circle" -> [1.0, 2.0]
+
+[veh_pars_]
+    powertrain_type = "electric"
+    
+    [veh_pars_.general]
+        lf = 1.906
+        lr = 1.194
+        h_cog = 0.345
+        sf = 1.3
+        sr = 1.3
+        m = 880.0
+        f_roll = 0.02
+        c_w_a = 1.15
+        c_z_a_f = 1.24
+        c_z_a_r = 1.52
+        g = 9.81
+        rho_air = 1.18
+        drs_factor = 0.0
+    [veh_pars_.engine]
+        topology = "RWD"
+        pow_e_motor = 200e3
+        eta_e_motor = 0.9
+        eta_e_motor_re = 0.9
+        torque_e_motor_max = 150.0
+    [veh_pars_.gearbox]
+        i_trans = [0.056, 0.091]
+        n_shift = [19000.0, 19000.0]
+        e_i = [1.04, 1.04]
+        eta_g = 0.96
+    [veh_pars_.tires]
+        tire_model_exp = 2.0
+        [veh_pars_.tires.f]
+            circ_ref = 2.168
+            fz_0 = 2500.0
+            mux = 1.22
+            muy = 1.22
+            dmux_dfz = -2.5e-5
+            dmuy_dfz = -2.5e-5
+        [veh_pars_.tires.r]
+            circ_ref = 2.168
+            fz_0 = 2500.0
+            mux = 1.42
+            muy = 1.42
+            dmux_dfz = -2.0e-5
+            dmuy_dfz = -2.0e-5

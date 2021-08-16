@@ -8,21 +8,56 @@ import threading
 import csv
 import numpy as np
 import itertools
-import os
+from race_car_model import (
+    RaceCarModel,
+    INPUT_VARIABLES,
+    RELATIONSHIP_VARIABLES
+)
 
+from definitions import (
+    GWC_TIMES, ITER_TAG, MOTOR_TORQUE_DENSITY_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
+    LAP_ENERGY_TAG, BATTERY_MASS_TAG, PIT_TIME_TAG,
+    MOTOR_MASS_TAG, MOTOR_MAX_POWER_TAG, NET_CHASSIS_MASS_TAG,
+    TOTAL_VEHICLE_MASS_TAG, MAXIMUM_ALLOWABLE_VEHICLE_MASS_TAG,
+    FRONTAL_AREA_TAG, BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
+    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
+    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
+    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
+    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
+    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
+    ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
+    ROLLING_RESISTANCE_TAG, ENERGY_REMAINING_TAG,
+    GWC_TIMES
+)
 
-TOTAL_LAPS_TAG = "total laps"
-ITER_TAG = "iteration"
-VEHICLE_TAG = "vehicle"
-MASS_TAG = "mass (kg)"
-MAX_MOTOR_TORQUE_TAG = "max motor torque (Nm)"
-C_D_TAG = "Cd(c_w_a)"
-LAPTIME_TAG = "laptime (s)"
-LAP_ENERGY_TAG = "energy (kJ)"
-HEADER_ROW = [ITER_TAG, VEHICLE_TAG, MASS_TAG,
-                C_D_TAG, MAX_MOTOR_TORQUE_TAG, 
-                LAPTIME_TAG, LAP_ENERGY_TAG, TOTAL_LAPS_TAG]
-REQUIRED_INPUTS = [MASS_TAG, MAX_MOTOR_TORQUE_TAG, C_D_TAG]
+HEADER_ROW = [
+    ITER_TAG, VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
+    LAP_ENERGY_TAG, BATTERY_MASS_TAG, PIT_TIME_TAG,
+    TOTAL_PITS_TAG, ENERGY_REMAINING_TAG,
+    MOTOR_MASS_TAG, MOTOR_MAX_POWER_TAG, NET_CHASSIS_MASS_TAG,
+    TOTAL_VEHICLE_MASS_TAG, MAXIMUM_ALLOWABLE_VEHICLE_MASS_TAG,
+    FRONTAL_AREA_TAG, BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
+    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
+    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
+    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
+    MOTOR_TORQUE_DENSITY_TAG,
+    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
+    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
+    ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
+    ROLLING_RESISTANCE_TAG, GWC_TIMES
+]
+
+# All tags except the outputs/results
+REQUIRED_INPUTS = [
+    BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
+    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
+    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
+    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
+    MOTOR_TORQUE_DENSITY_TAG,
+    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
+    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
+    ROLLING_RESISTANCE_MASS_FACTOR_TAG
+]
 
 class SingleIterationData():
     """Class to hold all data related to a single iteration including
@@ -30,48 +65,42 @@ class SingleIterationData():
     
     """
     def __init__(self, iteration_number, vehicle_name,
-                 vehicle_mass, vehicle_c_d, vehicle_max_torque):
+                 race_car_model: RaceCarModel):
         """Initialize data for a single iteration,
         set all inputs to the simulation
         
         """
         self._iteration_complete = False
         self.iteration_number = iteration_number
-        self.vehicle_name = vehicle_name
-        self.vehicle_mass = vehicle_mass
-        self.vehicle_max_torque = vehicle_max_torque
-        self.vehicle_c_d = vehicle_c_d
-        self.lap_time = -1
-        self.total_laps = -1
-        self.energy_per_lap = -1
-        self.results_list = {}  # formatting to output to file
+        self.race_car_model = race_car_model
 
-    def set_results(self, lap_time, total_laps, energy_per_lap):
+        self._results_list = {VEHICLE_TAG: vehicle_name}
+
+    def set_results(
+            self, lap_time, total_laps, energy_per_lap, total_pits,
+            gwc_times, energy_remaining
+        ):
         """ Set results from the completed lap and set the
         iteration complete flag to allow accessing results.
         """
 
         self._iteration_complete = True
-        self.lap_time = lap_time
-        self.total_laps = total_laps
-        self.energy_per_lap = energy_per_lap
+
+        self._results_list = self.race_car_model.get_vehicle_properties()
+        self._results_list[ITER_TAG] = self.iteration_number
+        self._results_list[LAPTIME_TAG] = lap_time
+        self._results_list[TOTAL_LAPS_TAG] = total_laps
+        self._results_list[LAP_ENERGY_TAG] = energy_per_lap
+        self._results_list[TOTAL_PITS_TAG] = total_pits
+        self._results_list[GWC_TIMES] = gwc_times
+        self._results_list[ENERGY_REMAINING_TAG] = energy_remaining
         
-        self.results_list = {
-            ITER_TAG: self.iteration_number,
-            VEHICLE_TAG: self.vehicle_name,
-            MASS_TAG: self.vehicle_mass,
-            MAX_MOTOR_TORQUE_TAG: self.vehicle_max_torque,
-            C_D_TAG: self.vehicle_c_d,
-            LAPTIME_TAG: lap_time,
-            LAP_ENERGY_TAG: energy_per_lap,
-            TOTAL_LAPS_TAG: total_laps
-        }
     
     def get_results(self):
         if self._iteration_complete:
-            return self.results_list
+            return self._results_list
         else:
-            raise("Iteration is not complete, must set results first")
+            raise(Exception("Iteration is not complete, must set results first"))
 
 
 class DataStore():
@@ -179,6 +208,44 @@ class DataStore():
             # create a "sa_range" list like other variables that
             # will only generate 1 value after calling a numpy.linspace on it
             self.input_data_ranges[key] = value
+    
+    def parse_car_properties(self, car_properties):
+        """Function to parse the car properties dictionary
+        from the config. 
+
+        Inputs:
+            - car_properties (dict): dictionary of car properties from config
+                that has static and ranges of variables
+        
+        Outputs: 
+            None
+        
+        Raises:
+            Nothing
+        
+        """
+ 
+        # iterate over list passed in
+        for key in car_properties:
+
+            # data passed in must be in the predefined list of
+            # keys
+            if key not in REQUIRED_INPUTS:
+                raise(Exception("invalid key passed in {}".format(key)))
+
+            # check type of the value, if its not a list its assumed
+            # to be a single value and is then made into a list
+            # that is in the same format as the varying lists
+            if type(car_properties[key]) is not list:
+                self.input_data_ranges[key] = [float(car_properties[key]),
+                                               float(car_properties[key]),
+                                               1]
+            # type is a list, just add to list
+            else:
+                # change type at index 2 for linspace operation later
+                # in generate_unique_sa_combinations
+                car_properties[key][2] = int(car_properties[key][2])
+                self.input_data_ranges[key] = car_properties[key]
         
     def generate_unique_sa_combinations(self):
         """ Function that generates all unique combinations of 
@@ -201,7 +268,7 @@ class DataStore():
         # validate keys all keys are present before creating unique combinations
         for key in REQUIRED_INPUTS:
             if key not in self.input_data_ranges.keys():
-                raise("incorrect variables present in input data ranges")
+                raise("incorrect variables present in input data ranges, {} not present".format(key))
         
         # turn iteration variables into a list of unique 
         # simulation conditions to iterate through
@@ -242,7 +309,7 @@ class DataStore():
             # explicitly to the SingleIterationData class later
             # This is possible because of the way the itertools.product 
             # function works.
-            # 
+            
             # The first value in each tuple comes from 
             # the first list that was passed in.
             # The first list that was passed in has the variable name 
@@ -251,18 +318,41 @@ class DataStore():
             input_vars = {}
             for j, variable_name in enumerate(sa_opts_names):
                 input_vars[variable_name] = entry[j]
+            
+            # Make racecar property model and calculate parameters
+            race_car_model = RaceCarModel()
+
+            racecar_input_vars = {}
+            for key in INPUT_VARIABLES:
+                racecar_input_vars[key] = input_vars[key]
+            race_car_model.set_inputs_dict(racecar_input_vars)
+
+            racecar_relationship_vars = {}
+            for key in RELATIONSHIP_VARIABLES:
+                racecar_relationship_vars[key] = input_vars[key]
+            
+            race_car_model.set_relationship_variables_dict(racecar_relationship_vars)
+
+            # Catch condition where the total mass of the vehicle
+            # is too high and don't add to the iteration
+            try:
+                race_car_model.calculate_car_properties()
+            except Exception as e:
+                print(e)
+                continue
 
             iteration_data = SingleIterationData(iteration_number=i,
                                                  vehicle_name="FIXME",
-                                                 vehicle_mass=input_vars[MASS_TAG],
-                                                 vehicle_c_d=input_vars[C_D_TAG],
-                                                 vehicle_max_torque=input_vars[MAX_MOTOR_TORQUE_TAG]
+                                                 race_car_model=race_car_model
                                                 )
             self.single_iteration_data[i] = iteration_data
             self._total_iterations = i + 1 # enumerate is 0 based
 
 
-    def set_single_iteration_results(self, iteration, lap_time, lap_energy, total_laps):
+    def set_single_iteration_results(
+        self, iteration, lap_time, lap_energy, total_laps,
+        total_pits, gwc_times, energy_remaining
+    ):
         """Method to set results of a single lap.
         Saves to datastore and writes out to csv file
         
@@ -272,6 +362,9 @@ class DataStore():
             - lap_time (float): lap time for current iteration in seconds
             - lap_energy (float): energy consumed for current iteration in kJ
             - total_laps (int): total laps completed over the whole race
+            - total_pits (int): total number of pits in race,
+            - gwc_times (list): green-white-checkered flag times
+            - energy_remaining (float): sum of percentage of battery energy remaining in race
 
         Outputs: Nothing
         
@@ -280,7 +373,10 @@ class DataStore():
         with self.add_results_lock:
             self.single_iteration_data[iteration].set_results(lap_time=lap_time,
                                                               energy_per_lap=lap_energy,
-                                                              total_laps=total_laps)
+                                                              total_laps=total_laps,
+                                                              energy_remaining=energy_remaining,
+                                                              total_pits=total_pits,
+                                                              gwc_times=gwc_times)
 
             # Write results to file
             # this should work magically because the csv writer is type DictWriter
