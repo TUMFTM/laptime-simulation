@@ -1,5 +1,6 @@
 # classes to store the relationship of race car properties
 from definitions import (
+    BATTERY_POWER_OUTPUT_FACT0R_TAG,
     MOTOR_TORQUE_DENSITY_TAG,
     BATTERY_MASS_TAG, PIT_TIME_TAG,
     MOTOR_MASS_TAG, MOTOR_MAX_POWER_TAG, NET_CHASSIS_MASS_TAG,
@@ -13,21 +14,6 @@ from definitions import (
     ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
     ROLLING_RESISTANCE_TAG
 )
-
-INPUT_VARIABLES = [
-    BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
-    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
-    COEFFICIENT_OF_DRAG_TAG
-]
-
-RELATIONSHIP_VARIABLES = [
-    BATTERY_ENERGY_DENSITY_TAG, BATTERY_MASS_PIT_FACTOR_TAG,
-    MOTOR_CONSTANT_TAG, MOTOR_TORQUE_DENSITY_TAG,
-    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
-    CHASSIS_BATTERY_MASS_FACTOR_TAG,
-    CHASSIS_MOTOR_MASS_FACTOR_TAG,
-    ROLLING_RESISTANCE_MASS_FACTOR_TAG
-]
 
 class RaceCarModel():
     """Class that captures the relationship
@@ -123,6 +109,7 @@ class RaceCarModel():
     def set_relationship_variables(self,
                                    battery_energy_density,
                                    battery_mass_pit_factor,
+                                   battery_maximum_output_factor,
                                    motor_constant,
                                    motor_torque_density,
                                    max_vehicle_weight_ratio,
@@ -136,6 +123,7 @@ class RaceCarModel():
         Inputs:
             - battery_mass_pit_factor (float): how long to pit per kg of battery (minutes/kg)
             - battery_energy_density (float): energy density of battery kWh/kg
+            - battery_maximum_output_factor (float): maximum output of battery pack's relation to size (W/kWh)
             - motor_constant (float): motor constant of motor Nm/sqrt(W)
             - motor_torque_density (float): torque per kilogram of motor (Nm/kg)
             - max_vehicle_weight_ratio (float): rules based maximum weight of vehicle based on gvw (unitless)
@@ -156,6 +144,7 @@ class RaceCarModel():
         # Battery Relationships
         self._race_car_properties[BATTERY_ENERGY_DENSITY_TAG] = battery_energy_density
         self._race_car_properties[BATTERY_MASS_PIT_FACTOR_TAG] = battery_mass_pit_factor
+        self._race_car_properties[BATTERY_POWER_OUTPUT_FACT0R_TAG] = battery_maximum_output_factor
 
         # Motor Relationships
         self._race_car_properties[MOTOR_CONSTANT_TAG] = motor_constant
@@ -190,6 +179,7 @@ class RaceCarModel():
         self.set_relationship_variables(
             battery_energy_density=relationship_variables[BATTERY_ENERGY_DENSITY_TAG],
             battery_mass_pit_factor=relationship_variables[BATTERY_MASS_PIT_FACTOR_TAG],
+            battery_maximum_output_factor=relationship_variables[BATTERY_POWER_OUTPUT_FACT0R_TAG],
             motor_constant=relationship_variables[MOTOR_CONSTANT_TAG],
             motor_torque_density=relationship_variables[MOTOR_TORQUE_DENSITY_TAG],
             max_vehicle_weight_ratio=relationship_variables[MAX_VEHICLE_WEIGHT_RATIO_TAG],
@@ -349,6 +339,16 @@ class RaceCarModel():
             self._race_car_properties[MOTOR_MAX_TORQUE_TAG] /
             self._race_car_properties[MOTOR_CONSTANT_TAG]
         ) ** 2
+
+        battery_power_limit = (
+            self._race_car_properties[BATTERY_SIZE_TAG] *
+            self._race_car_properties[BATTERY_POWER_OUTPUT_FACT0R_TAG]
+        )
+
+        maximum_motor_power = min(
+            maximum_motor_power,
+            battery_power_limit
+        )
 
         return maximum_motor_power
     

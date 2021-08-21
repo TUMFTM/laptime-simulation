@@ -82,12 +82,8 @@ class Lap(object):
         self.tire_loads = np.zeros((trackobj.no_points, 4))     # [N] tire loads [FL, FR, RL, RR]
 
         # [J/lap] maximum amount of energy allowed to recuperate in e motor
-        if self.pars_solver["series"] == 'F1':
-            self.e_rec_e_motor_max = 2e6                  # [J] F1: 2 MJ/lap
-            self.e_es_to_e_motor_max = 4e6                # [J] F1: 4 MJ/lap  -> currently not considered!
-        else:
-            self.e_rec_e_motor_max = np.inf
-            self.e_es_to_e_motor_max = np.inf
+        self.e_rec_e_motor_max = np.inf
+        self.e_es_to_e_motor_max = np.inf
 
     # ------------------------------------------------------------------------------------------------------------------
     # GETTERS / SETTERS ------------------------------------------------------------------------------------------------
@@ -192,10 +188,7 @@ class Lap(object):
         self.e_cons_cl = np.zeros(self.trackobj.no_points_cl)
         self.tire_loads = np.zeros((self.trackobj.no_points, 4))
 
-        if self.pars_solver["series"] == 'F1':
-            self.e_rec_e_motor_max = 2e6  # F1: 2 MJ/lap
-        else:
-            self.e_rec_e_motor_max = np.inf
+        self.e_rec_e_motor_max = np.inf
 
     def simulate_lap(self):
         """

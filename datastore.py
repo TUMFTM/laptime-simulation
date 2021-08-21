@@ -9,55 +9,20 @@ import csv
 import numpy as np
 import itertools
 from race_car_model import (
-    RaceCarModel,
-    INPUT_VARIABLES,
-    RELATIONSHIP_VARIABLES
+    RaceCarModel
 )
 
 from definitions import (
-    GWC_TIMES, ITER_TAG, MOTOR_TORQUE_DENSITY_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
-    LAP_ENERGY_TAG, BATTERY_MASS_TAG, PIT_TIME_TAG,
-    MOTOR_MASS_TAG, MOTOR_MAX_POWER_TAG, NET_CHASSIS_MASS_TAG,
-    TOTAL_VEHICLE_MASS_TAG, MAXIMUM_ALLOWABLE_VEHICLE_MASS_TAG,
-    FRONTAL_AREA_TAG, BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
-    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
-    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
-    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
-    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
-    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
-    ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
-    ROLLING_RESISTANCE_TAG, ENERGY_REMAINING_TAG,
-    GWC_TIMES
+    GWC_TIMES, ITER_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, 
+    VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
+    LAP_ENERGY_TAG, ENERGY_REMAINING_TAG,
+    GWC_TIMES,
+
+    REQUIRED_INPUTS, HEADER_ROW,
+    INPUT_VARIABLES, RELATIONSHIP_VARIABLES
 )
 
-HEADER_ROW = [
-    ITER_TAG, VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
-    LAP_ENERGY_TAG, BATTERY_MASS_TAG, PIT_TIME_TAG,
-    TOTAL_PITS_TAG, ENERGY_REMAINING_TAG,
-    MOTOR_MASS_TAG, MOTOR_MAX_POWER_TAG, NET_CHASSIS_MASS_TAG,
-    TOTAL_VEHICLE_MASS_TAG, MAXIMUM_ALLOWABLE_VEHICLE_MASS_TAG,
-    FRONTAL_AREA_TAG, BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
-    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
-    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
-    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
-    MOTOR_TORQUE_DENSITY_TAG,
-    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
-    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
-    ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
-    ROLLING_RESISTANCE_TAG, GWC_TIMES
-]
 
-# All tags except the outputs/results
-REQUIRED_INPUTS = [
-    BATTERY_SIZE_TAG, MOTOR_MAX_TORQUE_TAG,
-    GROSS_VEHICLE_WEIGHT_TAG, WEIGHT_REDUCTION_TAG,
-    COEFFICIENT_OF_DRAG_TAG, BATTERY_ENERGY_DENSITY_TAG,
-    BATTERY_MASS_PIT_FACTOR_TAG, MOTOR_CONSTANT_TAG,
-    MOTOR_TORQUE_DENSITY_TAG,
-    MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
-    CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
-    ROLLING_RESISTANCE_MASS_FACTOR_TAG
-]
 
 class SingleIterationData():
     """Class to hold all data related to a single iteration including
@@ -268,7 +233,9 @@ class DataStore():
         # validate keys all keys are present before creating unique combinations
         for key in REQUIRED_INPUTS:
             if key not in self.input_data_ranges.keys():
-                raise("incorrect variables present in input data ranges, {} not present".format(key))
+                raise(
+                    Exception("incorrect variables present in input data ranges, {} not present".format(key))
+                )
         
         # turn iteration variables into a list of unique 
         # simulation conditions to iterate through
@@ -338,7 +305,7 @@ class DataStore():
             try:
                 race_car_model.calculate_car_properties()
             except Exception as e:
-                print(e)
+                print("Exception in calculating car properties {}".format(e))
                 continue
 
             iteration_data = SingleIterationData(iteration_number=i,
@@ -384,36 +351,3 @@ class DataStore():
 
             results = self.single_iteration_data[iteration].get_results()
             self.results_file_writer.writerow(results)
-
-
-    def get_graph_data(self):
-        """ Method to return data that is graphable
-        by matplotlib. (needs to interface with what
-        we have there now)
-
-        All simulation iterations must be completed for this to work
-
-        """
-
-        sa_t_lap = np.zeros(self._total_iterations)
-        sa_fuel_cons = np.zeros(self._total_iterations)
-        sa_iter = np.zeros(self._total_iterations)
-        sa_mass = np.zeros(self._total_iterations)
-        sa_c_d = np.zeros(self._total_iterations)
-        sa_torque = np.zeros(self._total_iterations)
-        sa_total_laps = np.zeros(self._total_iterations)
-
-        with self.add_results_lock:
-            for key, single_iteration_data in self.single_iteration_data.items():
-                iteration_results = single_iteration_data.get_results()
-                key = key - 1
-                sa_t_lap[key] = iteration_results[LAPTIME_TAG]
-                sa_fuel_cons[key] = iteration_results[LAP_ENERGY_TAG]
-                sa_iter[key] = iteration_results[ITER_TAG]
-                sa_mass[key] = iteration_results[MASS_TAG]
-                sa_c_d[key] = iteration_results[C_D_TAG]
-                sa_torque[key] = iteration_results[MAX_MOTOR_TORQUE_TAG]
-                sa_total_laps[key] = iteration_results[TOTAL_LAPS_TAG]
- 
-        return sa_t_lap, sa_fuel_cons, sa_iter, sa_mass, sa_c_d, sa_torque, sa_total_laps
-

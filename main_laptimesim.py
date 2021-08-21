@@ -3,15 +3,12 @@ import time
 import datetime
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import pkg_resources
-import pickle
-import csv
-from mpl_toolkits.mplot3d import Axes3D
-import pandas as pd
 import toml
+import argparse
+
 from definitions import *  # FIXME enumerate imports
-from datastore import (DataStore                    )
+from datastore import (DataStore)
 
 from race_sim import RaceSim
 
@@ -95,13 +92,7 @@ def main(track_opts: dict,
         trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
                                      track_opts["trackname"] + "_pit.csv")
 
-    # set velocity limit
-    if driver_opts["vel_lim_glob"] is not None:
-        vel_lim_glob = driver_opts["vel_lim_glob"]
-    elif solver_opts["series"] == "FE":
-        vel_lim_glob = 225.0 / 3.6
-    else:
-        vel_lim_glob = np.inf
+    vel_lim_glob = np.inf
 
     # create instance
     track = laptimesim.src.track.Track(pars_track=track_opts,
@@ -135,21 +126,12 @@ def main(track_opts: dict,
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE CAR INSTANCE ----------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-
-    # create instance
-    if solver_opts["series"] == "FE":
-        car = laptimesim.src.car_electric.CarElectric(pars=veh_pars)
-    else:
-        raise IOError("Unknown racing series!")
+    car = laptimesim.src.car_electric.CarElectric(pars=veh_pars)
 
     # debug plot
     if debug_opts["use_debug_plots"]:
         # plot tire force potential characteristics
         car.plot_tire_characteristics()
-
-        # plot engine power characteristics
-        if car.powertrain_type == "combustion":
-            car.plot_power_engine()
 
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE DRIVER INSTANCE -------------------------------------------------------------------------------------------
@@ -207,15 +189,10 @@ def main(track_opts: dict,
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
-        if debug_opts["use_print"]:
-            print("INFO: Performing sensitivity analysis!")
-
         # turn debug messages off
         lap.pars_solver["print_debug"] = False
 
-        # perform eLemons analysis
-        if sa_opts["sa_type"] == "elemons":
-            datastore.parse_car_properties(car_properties)
+        datastore.parse_car_properties(car_properties)
 
         datastore.generate_unique_sa_combinations()
 
@@ -247,7 +224,6 @@ def main(track_opts: dict,
                 total_pits += day.number_of_pits
                 energy_remaining += day.energy_remaining
             
-
             datastore.set_single_iteration_results(iteration=i,
                                                    lap_time=lap.t_cl[-1],
                                                    total_laps=race_sim.total_laps,
@@ -255,33 +231,49 @@ def main(track_opts: dict,
                                                    total_pits=total_pits,
                                                    gwc_times=race_characteristics["gwc_times"],
                                                    energy_remaining=energy_remaining) 
-            # reset lap
 
             lap.reset_lap()
 
             print("SA: Finished solver run (%i)" % (i + 1))
+    print("total simulation time: {}"
+          .format(time.perf_counter() - t_start))
+
+def parse_args():
+    arg_parser = argparse.ArgumentParser("Simulate laptimes and total laps over many car property iterations")
+
+    arg_parser.add_argument('-s', '--sim-config', default='./sim_config.toml',
+                            help="path to sim_config")
+    arg_parser.add_argument('-c', '--car-config', default='./laptimesim/input/vehicles/FE_Berlin.toml',
+                            help="path to car_config")
+    
+    args = arg_parser.parse_args()
+
+    return args
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN FUNCTION CALL ---------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    args = parse_args()
     # Importing config from sim_config.toml
-    config = toml.load("sim_config.toml")
+    config = toml.load(args.sim_config)
+    car_config = toml.load(args.car_config)
  
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     # See sim_config.toml for variable descriptions
     track_opts_ = config["track_opts_"]
-
     solver_opts_ = config["solver_opts_"]
     driver_opts_ = config["driver_opts_"]
-    car_properties_ = config["car_properties_"]
     sa_opts_ = config["sa_opts_"]
     debug_opts_ = config["debug_opts_"]
     race_characteristics_ = config["race_characteristics_"]
-    veh_pars_ = config["veh_pars_"]
+
+    # see the car_config for variable details
+    car_properties_ = car_config["car_properties_"]
+    veh_pars_ = car_config["veh_pars_"]
 
     # Remap characteristics to the tag constants that are used throughout
     # the simulation
@@ -294,6 +286,7 @@ if __name__ == '__main__':
 
     car_properties[BATTERY_ENERGY_DENSITY_TAG] = car_properties_["relationship_variables"]["battery_energy_density"]
     car_properties[BATTERY_MASS_PIT_FACTOR_TAG] = car_properties_["relationship_variables"]["battery_mass_pit_factor"]
+    car_properties[BATTERY_POWER_OUTPUT_FACT0R_TAG] = car_properties_["relationship_variables"]["battery_power_output_factor"]
     car_properties[MOTOR_CONSTANT_TAG] = car_properties_["relationship_variables"]["motor_constant"]
     car_properties[MOTOR_TORQUE_DENSITY_TAG] = car_properties_["relationship_variables"]["motor_torque_density"]
     car_properties[MAX_VEHICLE_WEIGHT_RATIO_TAG] = car_properties_["relationship_variables"]["max_vehicle_weight_ratio"]
