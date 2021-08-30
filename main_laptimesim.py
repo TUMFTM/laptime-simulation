@@ -39,7 +39,8 @@ def main(track_opts: dict,
          debug_opts: dict,
          race_characteristics: dict,
          car_properties: dict,
-         veh_pars: dict) -> laptimesim.src.lap.Lap:
+         veh_pars: dict,
+         track_pars: dict,) -> laptimesim.src.lap.Lap:
 
     # ------------------------------------------------------------------------------------------------------------------
     # CHECK PYTHON DEPENDENCIES ----------------------------------------------------------------------------------------
@@ -82,21 +83,14 @@ def main(track_opts: dict,
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    parfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "track_pars.ini")
-
-    if not track_opts["use_pit"]:  # normal case
-        trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                     track_opts["trackname"] + ".csv")
-
-    else:  # case pit
-        trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                     track_opts["trackname"] + "_pit.csv")
+    trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
+                                    track_opts["trackname"] + ".csv")
 
     vel_lim_glob = np.inf
 
     # create instance
-    track = laptimesim.src.track.Track(pars_track=track_opts,
-                                       parfilepath=parfilepath,
+    track = laptimesim.src.track.Track(track_opts=track_opts,
+                                       track_pars=track_pars,
                                        trackfilepath=trackfilepath,
                                        vel_lim_glob=vel_lim_glob,
                                        yellow_s1=driver_opts["yellow_s1"],
@@ -257,8 +251,13 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # Importing config from sim_config.toml
+
+    # get repo path
+    repo_path = os.path.dirname(os.path.abspath(__file__))
+
     config = toml.load(args.sim_config)
     car_config = toml.load(args.car_config)
+    track_config = toml.load(os.path.join(repo_path, "laptimesim", "input", "tracks", "track_pars.toml"))
  
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
@@ -295,6 +294,8 @@ if __name__ == '__main__':
     car_properties[CHASSIS_MOTOR_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_motor_mass_factor"]
     car_properties[ROLLING_RESISTANCE_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["rolling_resistance_mass_factor"]
 
+    # get track parameters
+    track_pars_ = track_config[track_opts_["trackname"]]
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -306,4 +307,5 @@ if __name__ == '__main__':
          debug_opts=debug_opts_,
          race_characteristics=race_characteristics_,
          car_properties=car_properties,
-         veh_pars=veh_pars_)
+         veh_pars=veh_pars_,
+         track_pars=track_pars_)

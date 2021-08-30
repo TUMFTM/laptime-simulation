@@ -1,0 +1,57 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# Track Parameters
+
+# s12:              [m] sector boundary s1 -> s2
+# s23:              [m] sector boundary s2 -> s3
+# mu_mean:          [-] mean friction value of track
+# drs1_act:         [m] -> set 0.0 if there is no DRS, e.g. in FE
+# drs1_deact:       [m] -> set 0.0 if there is no DRS, e.g. in FE
+# pitspeed:         [m/s] allowed speed in pit
+# pit_in:           [m] pit entry
+# pit_out:          [m] pit exit
+
+
+[CarolinaMotorsportsPark]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+[Gingerman]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+[HighPlainsFullTrack]
+    s12 = 2000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+[Sonoma]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
