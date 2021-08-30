@@ -27,15 +27,9 @@ class CarElectric(Car):
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, parfilepath: str):
+    def __init__(self, pars: dict):
 
-        # load vehicle parameters
-        parser = configparser.ConfigParser()
-
-        if not parser.read(parfilepath):
-            raise RuntimeError('Specified config file does not exist or is empty!')
-
-        pars_veh_tmp = json.loads(parser.get('VEH_PARS', 'veh_pars'))
+        pars_veh_tmp = pars
 
         # unit conversions
         for i, item in enumerate(pars_veh_tmp["gearbox"]["n_shift"]):
@@ -45,8 +39,6 @@ class CarElectric(Car):
         pars_veh_tmp["gearbox"]["i_trans"] = np.array(pars_veh_tmp["gearbox"]["i_trans"])
         pars_veh_tmp["gearbox"]["n_shift"] = np.array(pars_veh_tmp["gearbox"]["n_shift"])
         pars_veh_tmp["gearbox"]["e_i"] = np.array(pars_veh_tmp["gearbox"]["e_i"])
-
-        self.battery_capacity = pars_veh_tmp["battery"]["battery_capacity"]
 
         # initialize base class object
         Car.__init__(self,

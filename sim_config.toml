@@ -6,10 +6,6 @@
 # USER INPUT -------------------------------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------------------------------------------
 
-# F1 qualifying mode:   DRS activated, EM strategy FCFB
-# F1 race mode:         DRS as desired, EM strategy LBP
-# FE qualifying mode:   DRS deactivated, EM strategy FCFB
-# FE race mode:         DRS deactivated, EM strategy FCFB + lift&coast
 # tracks must be unclosed, i.e. last point != first point!
 
 # track options ----------------------------------------------------------------------------------------------------
@@ -38,8 +34,6 @@
     use_pit = false
 
 # solver options ---------------------------------------------------------------------------------------------------
-# vehicle:                  vehicle parameter file
-# series:                   F1, FE
 # limit_braking_weak_side:  can be None, 'FA', 'RA', 'all' -> set if brake force potential should be determined
 #                           based on the weak (i.e. inner) side of the car, e.g. when braking into a corner
 # v_start:                  [m/s] velocity at start
@@ -48,8 +42,6 @@
 # es_diff_max:              [J] stop criterion -> maximum difference between two solver runs
 
 [solver_opts_]
-    vehicle = "FE_Berlin.ini"
-    series = "FE"
     limit_braking_weak_side = "FA"
     v_start = 27.7
     find_v_start = true
@@ -80,41 +72,25 @@
     yellow_s3 = false
     yellow_throttle = 0.3
     initial_energy = 4.58e6
-    em_strategy = "FCFB"
+    em_strategy = "FCFB"  # Must be FCFB
     use_recuperation = false
     use_lift_coast = false
     lift_coast_dist = 10.0
 
 # race characteristics --------------------------------------------------------------------------------------------
-# pit_time:  [m] time penalty per pit stop
-# gwc_times:   [m] list, minutes the track is hot on each race day "gwc" stands for green-white-chequered for the flag pattern
+# gwc_times: [m] list, minutes the track is hot on each race day "gwc" stands for green-white-chequered for the flag pattern
 #                  used to signal the beginning and end of the race.
 #                  For each race day in an event put the number of minutes each day into the list, a race that is 9am to 5pm 
 #                  for 2 days would be [540, 540] 
 
 [race_characteristics_]
-    pit_time = 10
     gwc_times = [360, 360]
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
 # use_sa:   switch to deactivate sensitivity analysis
-# sa_type:  'elemons_mass', 'elemons_mass_cd', 'elemons_mass_cd_torque'
-# range layout:  range of parameter variation [start, end, number of steps]
-# range names: mass, c_d, torque
-# RMH Note:
-#  sa_type                  Range 1 variable     Range 2 variable               Range 3
-# 'elemons_mass'            vehicle mass         not used - set to 'None' without quotes 
-# 'elemons_mass_cd'         vehicle mass         Cd c_w_a (coefficient of drag)
-# 'elemons_mass_cd_torque'  vehicle mass         Cd c_w_a (coefficient of drag) torque_e_motor_max 
-# to set which ranges are used in the simulation set the 'sa_type' variable according
-# to the value in the table directly above. You can leave the ranges in this file that are unused
+
 [sa_opts_]
     use_sa = true
-    sa_type = "elemons_mass_cd_torque"
-    mass = [400.0, 1200.0, 5.0] # note that the last value needs to be a int after parsed, see bug below
-    c_d = [1.10, 1.50, 5.0] # same as above
-    torque = [20.0, 200.0, 5.0]  # same note as above
-# https://github.com/uiri/toml/issues/270
 
 # debug options ----------------------------------------------------------------------------------------------------
 # use_plot:                 plot results
@@ -122,7 +98,6 @@
 # use_plot_comparison_tph:  calculate velocity profile with TPH FB solver and plot a comparison
 # use_print:                set if prints to console should be used or not (does not suppress hints/warnings)
 # use_print_result:         set if result should be printed to console or not
-# use_elemons_result:       set if eLemons result should be printed (added) to csv file or not
 
 [debug_opts_]
     use_plot = false
@@ -130,4 +105,4 @@
     use_plot_comparison_tph = false
     use_print = false
     use_print_result = true
-    use_elemons_result = true
+

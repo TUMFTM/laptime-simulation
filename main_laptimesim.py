@@ -3,23 +3,12 @@ import time
 import datetime
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import pkg_resources
-import pickle
-import csv
-from mpl_toolkits.mplot3d import Axes3D
-import pandas as pd
 import toml
-from datastore import (DataStore,
-                       TOTAL_LAPS_TAG,
-                       ITER_TAG,
-                       VEHICLE_TAG,
-                       MASS_TAG,
-                       MAX_MOTOR_TORQUE_TAG,
-                       C_D_TAG,
-                       LAP_ENERGY_TAG,
-                       LAPTIME_TAG
-                    )
+import argparse
+
+from definitions import *  # FIXME enumerate imports
+from datastore import (DataStore)
 
 from race_sim import RaceSim
 
@@ -48,7 +37,9 @@ def main(track_opts: dict,
          driver_opts: dict,
          sa_opts: dict,
          debug_opts: dict,
-         race_characteristics: dict) -> laptimesim.src.lap.Lap:
+         race_characteristics: dict,
+         car_properties: dict,
+         veh_pars: dict) -> laptimesim.src.lap.Lap:
 
     # ------------------------------------------------------------------------------------------------------------------
     # CHECK PYTHON DEPENDENCIES ----------------------------------------------------------------------------------------
@@ -101,13 +92,7 @@ def main(track_opts: dict,
         trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
                                      track_opts["trackname"] + "_pit.csv")
 
-    # set velocity limit
-    if driver_opts["vel_lim_glob"] is not None:
-        vel_lim_glob = driver_opts["vel_lim_glob"]
-    elif solver_opts["series"] == "FE":
-        vel_lim_glob = 225.0 / 3.6
-    else:
-        vel_lim_glob = np.inf
+    vel_lim_glob = np.inf
 
     # create instance
     track = laptimesim.src.track.Track(pars_track=track_opts,
@@ -141,25 +126,12 @@ def main(track_opts: dict,
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE CAR INSTANCE ----------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-
-    parfilepath = os.path.join(repo_path, "laptimesim", "input", "vehicles", solver_opts["vehicle"])
-
-    # create instance
-    if solver_opts["series"] == "F1":
-        car = laptimesim.src.car_hybrid.CarHybrid(parfilepath=parfilepath)
-    elif solver_opts["series"] == "FE":
-        car = laptimesim.src.car_electric.CarElectric(parfilepath=parfilepath)
-    else:
-        raise IOError("Unknown racing series!")
+    car = laptimesim.src.car_electric.CarElectric(pars=veh_pars)
 
     # debug plot
     if debug_opts["use_debug_plots"]:
         # plot tire force potential characteristics
         car.plot_tire_characteristics()
-
-        # plot engine power characteristics
-        if car.powertrain_type == "combustion":
-            car.plot_power_engine()
 
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE DRIVER INSTANCE -------------------------------------------------------------------------------------------
@@ -210,7 +182,6 @@ def main(track_opts: dict,
 
     else:
 
-
         # output file 
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
@@ -218,233 +189,111 @@ def main(track_opts: dict,
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
-        if debug_opts["use_print"]:
-            print("INFO: Performing sensitivity analysis!")
-
         # turn debug messages off
         lap.pars_solver["print_debug"] = False
 
-        # perform eLemons analysis
-        if sa_opts["sa_type"] == "elemons_mass":
-
-            c_d = lap.driverobj.carobj.pars_general["c_w_a"] 
-            max_torque = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
-
-            datastore.add_sa_input_variables({MASS_TAG: sa_opts["mass"]})
-            datastore.add_static_input_variables({MAX_MOTOR_TORQUE_TAG: max_torque,
-                                                  C_D_TAG: c_d})
-
-        elif sa_opts["sa_type"] == "elemons_mass_cd":
-            max_torque = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
-
-            datastore.add_sa_input_variables({MASS_TAG: sa_opts["mass"],
-                                              C_D_TAG: sa_opts["c_d"]})
-            datastore.add_static_input_variables({MAX_MOTOR_TORQUE_TAG: max_torque})
-        
-        elif sa_opts["sa_type"] == "elemons_mass_cd_torque":
-            max_torque = lap.driverobj.carobj.pars_engine["torque_e_motor_max"]
-
-            datastore.add_sa_input_variables({MASS_TAG: sa_opts["mass"],
-                                              C_D_TAG: sa_opts["c_d"],
-                                              MAX_MOTOR_TORQUE_TAG: sa_opts["torque"]})
+        datastore.parse_car_properties(car_properties)
 
         datastore.generate_unique_sa_combinations()
 
         for i, single_simulation_data in datastore.single_iteration_data.items():
             print("SA: Starting solver run (%i)" % (i + 1))
 
+            current_lap_car_variables = single_simulation_data.race_car_model.get_vehicle_properties()
+
             # change mass of vehicle
-            lap.driverobj.carobj.pars_general["m"] = single_simulation_data.vehicle_mass
-            lap.driverobj.carobj.pars_general["c_w_a"] = single_simulation_data.vehicle_c_d
-            lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = single_simulation_data.vehicle_max_torque
+            lap.driverobj.carobj.pars_general["m"] = current_lap_car_variables[TOTAL_VEHICLE_MASS_TAG]
+            lap.driverobj.carobj.pars_general["c_w_a"] = current_lap_car_variables[C_W_A_TAG]
+            lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
+            lap.driverobj.carobj.pars_general["f_roll"] = current_lap_car_variables[ROLLING_RESISTANCE_TAG]
+            lap.driverobj.carobj.pars_engine["pow_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
+
             # simulate lap and save lap time
             lap.simulate_lap()
 
-            race_sim = RaceSim(pit_time=race_characteristics["pit_time"],
+            race_sim = RaceSim(pit_time=current_lap_car_variables[PIT_TIME_TAG],
                                 gwc_times=race_characteristics["gwc_times"],
                                 lap_time=lap.t_cl[-1],
                                 energy_per_lap=lap.e_cons_cl[-1],
-                                battery_capacity=car.battery_capacity)
+                                battery_capacity=current_lap_car_variables[BATTERY_SIZE_TAG])
             race_sim.calculate()
 
+            total_pits = 0
+            energy_remaining = 0
+            for day in race_sim.race_days:
+                total_pits += day.number_of_pits
+                energy_remaining += day.energy_remaining
+            
             datastore.set_single_iteration_results(iteration=i,
                                                    lap_time=lap.t_cl[-1],
                                                    total_laps=race_sim.total_laps,
-                                                   lap_energy=lap.e_cons_cl[-1])
-            # reset lap
+                                                   lap_energy=lap.e_cons_cl[-1]/1000, # 1000 factor fo J -> kJ
+                                                   total_pits=total_pits,
+                                                   gwc_times=race_characteristics["gwc_times"],
+                                                   energy_remaining=energy_remaining) 
 
             lap.reset_lap()
 
             print("SA: Finished solver run (%i)" % (i + 1))
+    print("total simulation time: {}"
+          .format(time.perf_counter() - t_start))
 
-    # ------------------------------------------------------------------------------------------------------------------
-    # PLOTS ------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
+def parse_args():
+    arg_parser = argparse.ArgumentParser("Simulate laptimes and total laps over many car property iterations")
 
-    if not sa_opts["use_sa"]:
-        if debug_opts["use_plot"]:
-            lap.plot_overview()
-            # lap.plot_revs_gears()
-    else:
-        sa_t_lap, sa_fuel_cons, sa_iter, sa_mass, sa_c_d, sa_torque, sa_total_laps = datastore.get_graph_data()
-        
-        if sa_opts["sa_type"] == "mass":
-            # lap time
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.plot(sa_mass, sa_t_lap, "x")
-            ax.set_xlim(sa_mass[0], sa_mass[-1])
-            ax.set_ylim(sa_t_lap[0], sa_t_lap[-1])
-            ax.set_title("SA of lap time to mass")
-            ax.set_xlabel("mass m in kg")
-            ax.set_ylabel("lap time t in s")
-            plt.grid()
-            plt.show()
+    arg_parser.add_argument('-s', '--sim-config', default='./sim_config.toml',
+                            help="path to sim_config")
+    arg_parser.add_argument('-c', '--car-config', default='./laptimesim/input/vehicles/FE_Berlin.toml',
+                            help="path to car_config")
+    
+    args = arg_parser.parse_args()
 
-            # fuel consumption
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.plot(sa_mass, sa_fuel_cons, "x")
-            ax.set_xlim(sa_mass[0], sa_mass[-1])
-            ax.set_ylim(sa_fuel_cons[0], sa_fuel_cons[-1])
-            ax.set_title("SA of fuel consumption to mass")
-            ax.set_xlabel("mass m in kg")
-            ax.set_ylabel("fuel consumption in kg/lap")
-            plt.grid()
-            plt.show()
-
-        elif sa_opts["sa_type"] == "elemons_mass":
-            # lap time
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.plot(sa_mass, sa_t_lap, "x")
-            ax.set_title("SA of lap time to mass")
-            ax.set_xlabel("mass m in kg")
-            ax.set_ylabel("lap time t in s")
-            ax.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
-            plt.grid()
-            plt.show()
-
-            # fuel (energy) consumption
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.plot(sa_mass, sa_fuel_cons, "x")
-            ax.set_title("SA of energy consumption to mass")
-            ax.set_xlabel("mass m in kg")
-            ax.set_ylabel("energy consumption in kJ/lap")
-            ax.set_title('Energy Consumption\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
-            plt.grid()
-            plt.show()
-
-        elif sa_opts["sa_type"] == "elemons_mass_cd":
-            # Good old data mainpulation to get it graphing. I did this with 
-            # lots of googling on stack exchange            
-            Laptime_dataframe = pd.DataFrame({MASS_TAG: sa_mass[:], C_D_TAG: sa_c_d[:], LAPTIME_TAG: sa_t_lap[:]})
-            Energy_dataframe = pd.DataFrame({MASS_TAG: sa_mass[:], C_D_TAG: sa_c_d[:], LAP_ENERGY_TAG: sa_fuel_cons[:]})
-            total_laps_dataframe = pd.DataFrame({MASS_TAG: sa_mass[:], C_D_TAG: sa_c_d[:], TOTAL_LAPS_TAG: sa_total_laps[:]})
-
-            Energy_array = Energy_dataframe.pivot_table(index=MASS_TAG, columns=C_D_TAG, values=LAP_ENERGY_TAG).T.values
-            Laptime_array = Laptime_dataframe.pivot_table(index=MASS_TAG, columns=C_D_TAG, values=LAPTIME_TAG).T.values
-            total_laps_array = total_laps_dataframe.pivot_table(index=MASS_TAG, columns=C_D_TAG, values=TOTAL_LAPS_TAG).T.values
-
-            mass_unique = np.sort(np.unique(sa_mass))
-            c_d_unique = np.sort(np.unique(sa_c_d))
-
-            mass_array, c_d_array = np.meshgrid(mass_unique, c_d_unique)
-
-            fig = plt.figure()
-            fig2 = plt.figure()
-            ax1 = fig.add_subplot(111,projection='3d')
-            ax1.set_xlabel("Mass (kg)")
-            ax1.set_ylabel("Coeff of Drag - Cd")
-            ax1.set_zlabel("Energy per lap (kJ) * ")
-            ax1.set_title('Energy Per Lap\nvehicle: ' +  solver_opts["vehicle"] + '\ntrack: ' + track_opts["trackname"])
-            ax1.plot_surface(mass_array, c_d_array, Energy_array)
-
-            ax2 = fig2.add_subplot(111,projection='3d')
-            ax2.set_xlabel('Mass (kg)')
-            ax2.set_ylabel('Coeff of Drag - Cd')
-            ax2.set_zlabel('Lap Time (sec)')
-            ax2.set_title('Lap Times\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
-            ax2.plot_surface(mass_array, c_d_array, Laptime_array)
- 
-            fig3 = plt.figure()
-            ax3 = fig3.add_subplot(111,projection='3d')
-            ax3.set_xlabel('Mass (kg)')
-            ax3.set_ylabel('Coeff of Drag - Cd')
-            ax3.set_zlabel('Total Laps')
-            ax3.set_title('Total Laps\nvehicle: ' + solver_opts["vehicle"] + ' \ntrack: ' + track_opts["trackname"])
-            ax3.plot_surface(mass_array, c_d_array, total_laps_array)
-            plt.show()
-
-        elif sa_opts["sa_type"] == "elemons_mass_cd_torque":
-            # https://stackoverflow.com/questions/14995610/how-to-make-a-4d-plot-with-matplotlib-using-arbitrary-data
-            # graph mass and cd vs energy consumption/time at each max torque
-            fig = plt.figure()
-            fig2 = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax2 = fig2.add_subplot(111, projection='3d')
-
-            ax.set_xlabel("Mass (kg)")
-            ax.set_ylabel("C_d")
-            ax.set_zlabel("Max Torque")
-            ax.set_title("Energy Consumption (J) vs \n Mass, C_d, Max_torque")
-            ax2.set_xlabel("Mass (kg)")
-            ax2.set_ylabel("C_d")
-            ax2.set_zlabel("Max Torque")
-            ax2.set_title("Time of lap (s) vs \n Mass, C_d, Max_torque")
-
-
-            img = ax.scatter(sa_mass, sa_c_d, sa_torque, c=sa_fuel_cons, cmap=plt.hot())
-            img2 = ax2.scatter(sa_mass, sa_c_d, sa_torque, c=sa_t_lap, cmap=plt.hot())
-            fig.colorbar(img)
-            fig2.colorbar(img2)
-            plt.show()
-    # ------------------------------------------------------------------------------------------------------------------
-    # CI TESTING -------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-
-    # pickle lap object for possible CI testing
-    result_objects_file_path = os.path.join(output_path_testobjects,
-                                            "testobj_laptimesim_" + track_opts["trackname"] + ".pkl")
-    with open(result_objects_file_path, 'wb') as fh:
-        pickle.dump(lap, fh)
-
-    return lap  # return required in case of CI testing
-
+    return args
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN FUNCTION CALL ---------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    args = parse_args()
     # Importing config from sim_config.toml
-    config = toml.load("sim_config.toml")
+    config = toml.load(args.sim_config)
+    car_config = toml.load(args.car_config)
  
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     # See sim_config.toml for variable descriptions
     track_opts_ = config["track_opts_"]
-
     solver_opts_ = config["solver_opts_"]
     driver_opts_ = config["driver_opts_"]
-    
-    # These are because of this bug: https://github.com/uiri/toml/issues/270
-    if config["sa_opts_"]["sa_type"] == "elemons_mass" or\
-       config["sa_opts_"]["sa_type"] == "elemons_mass_cd" or \
-       config["sa_opts_"]["sa_type"] == "elemons_mass_cd_torque":
-        config["sa_opts_"]["mass"][2] = int(config["sa_opts_"]["mass"][2])
-    if config["sa_opts_"]["sa_type"] == "elemons_mass_cd" or \
-       config["sa_opts_"]["sa_type"] == "elemons_mass_cd_torque":
-        config["sa_opts_"]["c_d"][2] = int(config["sa_opts_"]["c_d"][2])
-    if config["sa_opts_"]["sa_type"] == "elemons_mass_cd_torque":
-        config["sa_opts_"]["torque"][2] = int(config["sa_opts_"]["torque"][2])
     sa_opts_ = config["sa_opts_"]
-
     debug_opts_ = config["debug_opts_"]
-
     race_characteristics_ = config["race_characteristics_"]
+
+    # see the car_config for variable details
+    car_properties_ = car_config["car_properties_"]
+    veh_pars_ = car_config["veh_pars_"]
+
+    # Remap characteristics to the tag constants that are used throughout
+    # the simulation
+    car_properties = {}
+    car_properties[BATTERY_SIZE_TAG] = car_properties_["independent_variables"]["battery_size"]
+    car_properties[MOTOR_MAX_TORQUE_TAG] = car_properties_["independent_variables"]["motor_max_torque"]
+    car_properties[GROSS_VEHICLE_WEIGHT_TAG] = car_properties_["independent_variables"]["gross_vehicle_weight"]
+    car_properties[WEIGHT_REDUCTION_TAG] = car_properties_["independent_variables"]["weight_reduction"]
+    car_properties[COEFFICIENT_OF_DRAG_TAG] = car_properties_["independent_variables"]["coefficient_of_drag"]
+
+    car_properties[BATTERY_ENERGY_DENSITY_TAG] = car_properties_["relationship_variables"]["battery_energy_density"]
+    car_properties[BATTERY_MASS_PIT_FACTOR_TAG] = car_properties_["relationship_variables"]["battery_mass_pit_factor"]
+    car_properties[BATTERY_POWER_OUTPUT_FACT0R_TAG] = car_properties_["relationship_variables"]["battery_power_output_factor"]
+    car_properties[MOTOR_CONSTANT_TAG] = car_properties_["relationship_variables"]["motor_constant"]
+    car_properties[MOTOR_TORQUE_DENSITY_TAG] = car_properties_["relationship_variables"]["motor_torque_density"]
+    car_properties[MAX_VEHICLE_WEIGHT_RATIO_TAG] = car_properties_["relationship_variables"]["max_vehicle_weight_ratio"]
+    car_properties[CAR_DENSITY_TAG] = car_properties_["relationship_variables"]["car_density"]
+    car_properties[CHASSIS_BATTERY_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_battery_mass_factor"]
+    car_properties[CHASSIS_MOTOR_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_motor_mass_factor"]
+    car_properties[ROLLING_RESISTANCE_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["rolling_resistance_mass_factor"]
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
@@ -455,4 +304,6 @@ if __name__ == '__main__':
          driver_opts=driver_opts_,
          sa_opts=sa_opts_,
          debug_opts=debug_opts_,
-         race_characteristics=race_characteristics_)
+         race_characteristics=race_characteristics_,
+         car_properties=car_properties,
+         veh_pars=veh_pars_)
