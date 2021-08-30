@@ -106,3 +106,8 @@
     use_print = false
     use_print_result = true
 
+# car options ----------------------------------------------------------------------------------------------------
+# car:                      name of car toml file to use for the simulation
+
+[car_opts_]
+    car = "FE_Berlin"

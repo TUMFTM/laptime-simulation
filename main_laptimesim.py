@@ -232,31 +232,21 @@ def main(track_opts: dict,
     print("total simulation time: {}"
           .format(time.perf_counter() - t_start))
 
-def parse_args():
-    arg_parser = argparse.ArgumentParser("Simulate laptimes and total laps over many car property iterations")
-
-    arg_parser.add_argument('-s', '--sim-config', default='./sim_config.toml',
-                            help="path to sim_config")
-    arg_parser.add_argument('-c', '--car-config', default='./laptimesim/input/vehicles/FE_Berlin.toml',
-                            help="path to car_config")
-    
-    args = arg_parser.parse_args()
-
-    return args
-
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN FUNCTION CALL ---------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    args = parse_args()
+
     # Importing config from sim_config.toml
 
     # get repo path
     repo_path = os.path.dirname(os.path.abspath(__file__))
 
-    config = toml.load(args.sim_config)
-    car_config = toml.load(args.car_config)
+    config = toml.load(os.path.join(repo_path, "sim_config.toml"))
+    car_name = config["car_opts_"]["car"]
+    car_name = "{}.toml".format(car_name)
+    car_config = toml.load(os.path.join(repo_path, "laptimesim", "input", "vehicles", car_name))
     track_config = toml.load(os.path.join(repo_path, "laptimesim", "input", "tracks", "track_pars.toml"))
  
     # ------------------------------------------------------------------------------------------------------------------
