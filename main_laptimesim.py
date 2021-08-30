@@ -37,7 +37,6 @@ def main(track_opts: dict,
          driver_opts: dict,
          sa_opts: dict,
          debug_opts: dict,
-         race_characteristics: dict,
          car_properties: dict,
          veh_pars: dict,
          track_pars: dict,) -> laptimesim.src.lap.Lap:
@@ -206,7 +205,7 @@ def main(track_opts: dict,
             lap.simulate_lap()
 
             race_sim = RaceSim(pit_time=current_lap_car_variables[PIT_TIME_TAG],
-                                gwc_times=race_characteristics["gwc_times"],
+                                gwc_times=track_pars["gwc_times"],
                                 lap_time=lap.t_cl[-1],
                                 energy_per_lap=lap.e_cons_cl[-1],
                                 battery_capacity=current_lap_car_variables[BATTERY_SIZE_TAG])
@@ -223,7 +222,7 @@ def main(track_opts: dict,
                                                    total_laps=race_sim.total_laps,
                                                    lap_energy=lap.e_cons_cl[-1]/1000, # 1000 factor fo J -> kJ
                                                    total_pits=total_pits,
-                                                   gwc_times=race_characteristics["gwc_times"],
+                                                   gwc_times=track_pars["gwc_times"],
                                                    energy_remaining=energy_remaining) 
 
             lap.reset_lap()
@@ -258,7 +257,6 @@ if __name__ == '__main__':
     driver_opts_ = config["driver_opts_"]
     sa_opts_ = config["sa_opts_"]
     debug_opts_ = config["debug_opts_"]
-    race_characteristics_ = config["race_characteristics_"]
 
     # see the car_config for variable details
     car_properties_ = car_config["car_properties_"]
@@ -295,7 +293,6 @@ if __name__ == '__main__':
          driver_opts=driver_opts_,
          sa_opts=sa_opts_,
          debug_opts=debug_opts_,
-         race_characteristics=race_characteristics_,
          car_properties=car_properties,
          veh_pars=veh_pars_,
          track_pars=track_pars_)

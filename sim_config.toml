@@ -77,15 +77,6 @@
     use_lift_coast = false
     lift_coast_dist = 10.0
 
-# race characteristics --------------------------------------------------------------------------------------------
-# gwc_times: [m] list, minutes the track is hot on each race day "gwc" stands for green-white-chequered for the flag pattern
-#                  used to signal the beginning and end of the race.
-#                  For each race day in an event put the number of minutes each day into the list, a race that is 9am to 5pm 
-#                  for 2 days would be [540, 540] 
-
-[race_characteristics_]
-    gwc_times = [360, 360]
-
 # sensitivity analysis options -------------------------------------------------------------------------------------
 # use_sa:   switch to deactivate sensitivity analysis
 

@@ -13,10 +13,9 @@ from race_car_model import (
 )
 
 from definitions import (
-    GWC_TIMES, ITER_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, 
+    GWC_TIMES_TAG, ITER_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, 
     VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
     LAP_ENERGY_TAG, ENERGY_REMAINING_TAG,
-    GWC_TIMES,
 
     REQUIRED_INPUTS, HEADER_ROW,
     INPUT_VARIABLES, RELATIONSHIP_VARIABLES
@@ -57,7 +56,7 @@ class SingleIterationData():
         self._results_list[TOTAL_LAPS_TAG] = total_laps
         self._results_list[LAP_ENERGY_TAG] = energy_per_lap
         self._results_list[TOTAL_PITS_TAG] = total_pits
-        self._results_list[GWC_TIMES] = gwc_times
+        self._results_list[GWC_TIMES_TAG] = gwc_times
         self._results_list[ENERGY_REMAINING_TAG] = energy_remaining
         
     

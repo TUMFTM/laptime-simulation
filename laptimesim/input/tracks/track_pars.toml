@@ -9,6 +9,11 @@
 # pitspeed:         [m/s] allowed speed in pit
 # pit_in:           [m] pit entry
 # pit_out:          [m] pit exit
+# gwc_times:        [minutes] list of "Green", "White", "Checkered" flag times for each day
+#                             must be a list of times, one time for each day
+# winning_laps:     [-] number of winning laps of the best gas car
+# pit_penalty:      [minutes] number of additional minutes it takes to DRIVE through pit lane
+#                             the time to change the battery is in the car config and will be added to this
 
 
 [CarolinaMotorsportsPark]
@@ -22,6 +27,10 @@
     pitspeed = 22.222
     pit_in = 0.0
     pit_out = 0.0
+    gwc_times = [8, 8]
+    winning_laps = 9001
+    pit_penalty = 1
+
 [Gingerman]
     s12 = 1000.0
     s23 = 3000.0
@@ -33,6 +42,10 @@
     pitspeed = 22.222
     pit_in = 0.0
     pit_out = 0.0
+    gwc_times = [7, 8]
+    winning_laps = 9001
+    pit_penalty = 1
+
 [HighPlainsFullTrack]
     s12 = 2000.0
     s23 = 3000.0
@@ -44,6 +57,10 @@
     pitspeed = 22.222
     pit_in = 0.0
     pit_out = 0.0
+    gwc_times = [9, 8]
+    winning_laps = 9001
+    pit_penalty = 1
+
 [Sonoma]
     s12 = 1000.0
     s23 = 3000.0
@@ -55,3 +72,6 @@
     pitspeed = 22.222
     pit_in = 0.0
     pit_out = 0.0
+    gwc_times = [9, 9]
+    winning_laps = 9001
+    pit_penalty = 1
