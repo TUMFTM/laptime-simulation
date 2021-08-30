@@ -89,8 +89,60 @@ as a raceway.
     out body;
     >;
     out skel qt;
-* `Step 4`: Click export and save it as a GeoJSON. Be aware that the export might include a lot of unnecessary points
-which must be excluded either in a separate step or during the import.
+* `Step 4`: Click "export" and save it as a GeoJSON. Be aware that the export might include a lot of unnecessary points
+which must be excluded either in a separate step or during the import. 
+* `Step 5`: Note: (RMH) Before running main_opt_raceline.py , the exported geojson file should be put in the project directory: laptime-simulation/opt_raceline/input/centerlines
+
+* `Step 6`:  Edit/add a "track_pars" structure for the track of interest structure 
+* `Step 7`:  Run "python3 main_opt_raceline.py"
+
+Note: (RMH) Per the above warning, I got errors when running main_opt_raceline.py 
+	the first time with a raw geojson file exported from OpenStreets like:
+		Traceback (most recent call last):
+		  File "main_opt_raceline.py", line 478, in <module>
+		    main(track_pars=track_pars_,
+		  File "main_opt_raceline.py", line 111, in main
+		    refline_imp = opt_raceline.src.import_geojson_gps_centerline.\
+		  File "/home/rick/eLemons/old-rdriven-laptime_simulation/laptime-simulation/opt_raceline/src/import_geojson_gps_centerline.py", line 54, in import_geojson_gps_centerline
+		    tmp_xy[i] = utm.from_latlon(tmp_gps[i][1], tmp_gps[i][0])[:2]
+		  File "/home/rick/.local/lib/python3.8/site-packages/utm/conversion.py", line 190, in from_latlon
+		    raise OutOfRangeError('latitude out of range (must be between 80 deg S and 84 deg N)')
+		utm.error.OutOfRangeError: latitude out of range (must be between 80 deg S and 84 deg N)
+
+	To eliminate the errors you can hand edit the geojson file to remove the track 
+	description Feature and possibly a couple "non track" sections also included in it. 
+	For instance in Gingerman.geojson the track description 
+
+Note:  Insert the actual track length and width (and put in the main_opt_raceline data structure) 
+	for that track, by visiting the desired track's website and look it up, figure it out, etc. 
+	Or look at the length of past races from our eLemons_vehicle_and_track_data Gdrive sheet. 
+	You'll have to be clever because each track & race chooses some sections of track which 
+	changes the length. 
+
+Note: When executing main_opt_raceline for a track .geojson file that includes pit lanes and additional
+	track sections not associated with the track of interest, as one of the first steps the 
+	program lets you deselect unwanted sections of the roadways by clicking their colored lines 
+	in the legend.  
+	** You'll need to delselect extra sections of track**, or else the curve algorithm
+	will try to fit a curve to the all the sections- yikes! 
+
+Note: If you have to deselect sections, make sure you set the # in Start ID control in the text box in 
+	upper right corner of the GUI to a reasonable (existing) track section number. The best choice 
+	is section with the (straight) start/finish line. If you pick a curved section the 
+	optimizer has a problem with starting velocity, it seems, and the code will bomb.
+
+Note: Sometimes the Section 0 starts in a corner which makes the main_laptimesim have heartburn 
+	and throw errors when you start it. You'll need to shuffle the .geojson coordinates before 
+	running the main_opt_raceline step so that the start of the simulation is more or less on 
+	a straightaway.
+
+Note: Once pared down, retire the image by clicking X in the right hand corner
+	and to allow main_opt_raceline to continue its calculations.
+	
+Note: The output of this step is a centerlines\"trackname".csv file
+	Copy this file to /laptimesim/input/tracks/racelines
+	e.g. cp opt_raceline/output/racelines/Gingerman.csv laptimesim/input/tracks/racelines/.
+
 
 # Running the lap time simulation
 If the requirements are installed on the system, follow these steps:

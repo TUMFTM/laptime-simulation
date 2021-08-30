@@ -312,6 +312,18 @@ if __name__ == '__main__':
 
     # F1 ---------------------------------------------------------------------------------------------------------------
 
+    #track_pars_ = {"location": "CarolinaMotorsportsPark",
+    #               "track_length": 3667.7,
+    #               "track_width": 10.0}
+
+    #track_pars_ = {"location": "Gingerman",
+    #               "track_length": 3443.0,
+    #               "track_width": 10.0}
+
+    #track_pars_ = {"location": "Sonoma",
+    #               "track_length": 4055.5,
+    #               "track_width": 10.0}
+
     track_pars_ = {"location": "HighPlainsFullTrack",
                    "track_length": 4050.5,
                    "track_width": 10.0}

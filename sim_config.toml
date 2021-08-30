@@ -14,6 +14,11 @@
 
 # track options ----------------------------------------------------------------------------------------------------
 # trackname:            track name of desired race track (file must be available in the input folder)
+#                       eLemons values:
+#                       trackname = "HighPlainsFullTrack"
+#                       trackname = "Gingerman"
+#                       trackname = "CarolinaMotorsportsPark"
+#                       trackname = "Sonoma"
 # flip_track:           switch to flip track direction if required
 # mu_weather:           [-] factor to consider wet track, e.g. by mu_weather = 0.6
 # interp_stepsize_des:  [m], desired stepsize after interpolation of the input raceline points
@@ -46,7 +51,7 @@
     vehicle = "FE_Berlin.ini"
     series = "FE"
     limit_braking_weak_side = "FA"
-    v_start = 27.7 
+    v_start = 27.7
     find_v_start = true
     max_no_em_iters = 5
     es_diff_max = 1.0

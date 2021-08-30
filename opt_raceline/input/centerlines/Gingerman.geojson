@@ -1,0 +1,989 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-ide",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2021-08-22T18:40:09Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/42851247",
+        "highway": "raceway",
+        "name": "Turn 1",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1404947,
+            42.4096457
+          ],
+          [
+            -86.1405006,
+            42.4097963
+          ],
+          [
+            -86.1405454,
+            42.4099005
+          ],
+          [
+            -86.1406656,
+            42.4099758
+          ],
+          [
+            -86.1408173,
+            42.4100104
+          ],
+          [
+            -86.1410404,
+            42.4100548
+          ]
+        ]
+      },
+      "id": "way/42851247"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/628543900",
+        "highway": "raceway",
+        "oneway": "yes",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1347812,
+            42.4068632
+          ],
+          [
+            -86.1344433,
+            42.4068425
+          ],
+          [
+            -86.1342341,
+            42.4068505
+          ],
+          [
+            -86.1325014,
+            42.4071277
+          ]
+        ]
+      },
+      "id": "way/628543900"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521714",
+        "highway": "raceway",
+        "name": "Pit Lane",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1406692,
+            42.4065736
+          ],
+          [
+            -86.1407052,
+            42.4093122
+          ]
+        ]
+      },
+      "id": "way/796521714"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521715",
+        "highway": "raceway",
+        "sport": "motor"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1407052,
+            42.4093122
+          ],
+          [
+            -86.1407052,
+            42.4096
+          ],
+          [
+            -86.1407466,
+            42.4096973
+          ],
+          [
+            -86.1408219,
+            42.4097668
+          ],
+          [
+            -86.142079,
+            42.4102386
+          ]
+        ]
+      },
+      "id": "way/796521715"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521719",
+        "highway": "raceway",
+        "name": "Turn 4",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1390627,
+            42.4098056
+          ],
+          [
+            -86.139135,
+            42.4096682
+          ],
+          [
+            -86.1391693,
+            42.4095668
+          ],
+          [
+            -86.1391693,
+            42.4095035
+          ],
+          [
+            -86.1391693,
+            42.4094401
+          ]
+        ]
+      },
+      "id": "way/796521719"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521720",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1410404,
+            42.4100548
+          ],
+          [
+            -86.1415468,
+            42.4101245
+          ],
+          [
+            -86.1418988,
+            42.4101816
+          ],
+          [
+            -86.142079,
+            42.4102386
+          ]
+        ]
+      },
+      "id": "way/796521720"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521721",
+        "highway": "raceway",
+        "name": "Turn 2",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.142079,
+            42.4102386
+          ],
+          [
+            -86.1422335,
+            42.4103146
+          ],
+          [
+            -86.1423499,
+            42.410418
+          ],
+          [
+            -86.1424159,
+            42.4105471
+          ],
+          [
+            -86.1424347,
+            42.4106759
+          ],
+          [
+            -86.1423639,
+            42.4108125
+          ],
+          [
+            -86.142263,
+            42.4109388
+          ],
+          [
+            -86.1421252,
+            42.4110402
+          ],
+          [
+            -86.1419556,
+            42.4111179
+          ]
+        ]
+      },
+      "id": "way/796521721"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521722",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1419556,
+            42.4111179
+          ],
+          [
+            -86.1416954,
+            42.4111912
+          ],
+          [
+            -86.1385079,
+            42.4116476
+          ]
+        ]
+      },
+      "id": "way/796521722"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521723",
+        "highway": "raceway",
+        "name": "Turn 3",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1385079,
+            42.4116476
+          ],
+          [
+            -86.1383062,
+            42.4116642
+          ],
+          [
+            -86.1381657,
+            42.4116189
+          ],
+          [
+            -86.1380567,
+            42.4115529
+          ],
+          [
+            -86.1379789,
+            42.4114803
+          ],
+          [
+            -86.1379251,
+            42.4113922
+          ],
+          [
+            -86.13791,
+            42.4113092
+          ],
+          [
+            -86.1379393,
+            42.4112142
+          ],
+          [
+            -86.138002,
+            42.4111218
+          ]
+        ]
+      },
+      "id": "way/796521723"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521724",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.138002,
+            42.4111218
+          ],
+          [
+            -86.1390627,
+            42.4098056
+          ]
+        ]
+      },
+      "id": "way/796521724"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521725",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1391693,
+            42.4094401
+          ],
+          [
+            -86.1391779,
+            42.4080459
+          ]
+        ]
+      },
+      "id": "way/796521725"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521726",
+        "highway": "raceway",
+        "name": "Turn 5",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1391779,
+            42.4080459
+          ],
+          [
+            -86.1391522,
+            42.4079445
+          ],
+          [
+            -86.1390921,
+            42.4078431
+          ],
+          [
+            -86.1389719,
+            42.4077354
+          ],
+          [
+            -86.1388346,
+            42.4076656
+          ]
+        ]
+      },
+      "id": "way/796521726"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521727",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1388346,
+            42.4076656
+          ],
+          [
+            -86.1386801,
+            42.4076086
+          ],
+          [
+            -86.1384741,
+            42.4075516
+          ],
+          [
+            -86.138292,
+            42.4075367
+          ]
+        ]
+      },
+      "id": "way/796521727"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521728",
+        "highway": "raceway",
+        "name": "Turn 6",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.138292,
+            42.4075367
+          ],
+          [
+            -86.1380775,
+            42.4075267
+          ],
+          [
+            -86.1379068,
+            42.4075443
+          ],
+          [
+            -86.1378122,
+            42.4075922
+          ],
+          [
+            -86.1377385,
+            42.4076535
+          ],
+          [
+            -86.137667,
+            42.4077578
+          ]
+        ]
+      },
+      "id": "way/796521728"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521729",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.137667,
+            42.4077578
+          ],
+          [
+            -86.1376155,
+            42.4078733
+          ],
+          [
+            -86.1367715,
+            42.409885
+          ]
+        ]
+      },
+      "id": "way/796521729"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521730",
+        "highway": "raceway",
+        "name": "Turn 7",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1367715,
+            42.409885
+          ],
+          [
+            -86.1367039,
+            42.4100061
+          ],
+          [
+            -86.1365972,
+            42.4100864
+          ],
+          [
+            -86.1364599,
+            42.410147
+          ],
+          [
+            -86.1363055,
+            42.4101667
+          ],
+          [
+            -86.13613,
+            42.4101575
+          ]
+        ]
+      },
+      "id": "way/796521730"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521731",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.13613,
+            42.4101575
+          ],
+          [
+            -86.1359507,
+            42.4100992
+          ],
+          [
+            -86.1357619,
+            42.4100168
+          ],
+          [
+            -86.1355559,
+            42.40989
+          ],
+          [
+            -86.1354013,
+            42.4097267
+          ],
+          [
+            -86.1352868,
+            42.4095444
+          ],
+          [
+            -86.1352209,
+            42.4093599
+          ],
+          [
+            -86.1352076,
+            42.4091676
+          ]
+        ]
+      },
+      "id": "way/796521731"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521732",
+        "highway": "raceway",
+        "name": "Turn 8",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1352076,
+            42.4091676
+          ],
+          [
+            -86.1352361,
+            42.4089986
+          ],
+          [
+            -86.1353104,
+            42.4088661
+          ],
+          [
+            -86.1354076,
+            42.4087415
+          ],
+          [
+            -86.1355249,
+            42.4086393
+          ],
+          [
+            -86.1357253,
+            42.4084908
+          ]
+        ]
+      },
+      "id": "way/796521732"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521733",
+        "highway": "raceway",
+        "name": "Turn 9",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1357253,
+            42.4084908
+          ],
+          [
+            -86.135857,
+            42.4083824
+          ],
+          [
+            -86.1359496,
+            42.4082585
+          ],
+          [
+            -86.1360105,
+            42.4081353
+          ],
+          [
+            -86.1360306,
+            42.4079931
+          ],
+          [
+            -86.1360276,
+            42.4078284
+          ],
+          [
+            -86.13596,
+            42.4076706
+          ],
+          [
+            -86.1358504,
+            42.4075249
+          ],
+          [
+            -86.1356845,
+            42.4073742
+          ]
+        ]
+      },
+      "id": "way/796521733"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521734",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1356845,
+            42.4073742
+          ],
+          [
+            -86.1354357,
+            42.4072093
+          ],
+          [
+            -86.1347812,
+            42.4068632
+          ]
+        ]
+      },
+      "id": "way/796521734"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521735",
+        "highway": "raceway",
+        "name": "Turn 10A",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1347812,
+            42.4068632
+          ],
+          [
+            -86.1343199,
+            42.4065566
+          ],
+          [
+            -86.1342512,
+            42.4064362
+          ],
+          [
+            -86.1342341,
+            42.4063094
+          ],
+          [
+            -86.1342512,
+            42.4061763
+          ],
+          [
+            -86.1343113,
+            42.4060496
+          ],
+          [
+            -86.1344229,
+            42.4059355
+          ],
+          [
+            -86.1346031,
+            42.4058341
+          ],
+          [
+            -86.1347662,
+            42.4057961
+          ]
+        ]
+      },
+      "id": "way/796521735"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521736",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1347662,
+            42.4057961
+          ],
+          [
+            -86.1350277,
+            42.4057894
+          ],
+          [
+            -86.1398731,
+            42.4056739
+          ]
+        ]
+      },
+      "id": "way/796521736"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521737",
+        "highway": "raceway",
+        "name": "Turn 10B",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1325014,
+            42.4071277
+          ],
+          [
+            -86.1322546,
+            42.4071475
+          ],
+          [
+            -86.1321205,
+            42.4071158
+          ],
+          [
+            -86.1319327,
+            42.4070366
+          ],
+          [
+            -86.1318415,
+            42.4069336
+          ],
+          [
+            -86.1317879,
+            42.4068188
+          ],
+          [
+            -86.1317772,
+            42.406696
+          ],
+          [
+            -86.1318201,
+            42.4065534
+          ],
+          [
+            -86.1319006,
+            42.4064227
+          ],
+          [
+            -86.1320454,
+            42.406284
+          ],
+          [
+            -86.1322439,
+            42.406185
+          ]
+        ]
+      },
+      "id": "way/796521737"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521738",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1322439,
+            42.406185
+          ],
+          [
+            -86.133306,
+            42.4059157
+          ],
+          [
+            -86.1335582,
+            42.4058721
+          ],
+          [
+            -86.1339444,
+            42.4058325
+          ],
+          [
+            -86.134336,
+            42.4058127
+          ],
+          [
+            -86.1347662,
+            42.4057961
+          ]
+        ]
+      },
+      "id": "way/796521738"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521739",
+        "highway": "raceway",
+        "name": "Turn 11",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1398731,
+            42.4056739
+          ],
+          [
+            -86.1400603,
+            42.4056783
+          ],
+          [
+            -86.1401993,
+            42.4056987
+          ],
+          [
+            -86.1403023,
+            42.405758
+          ],
+          [
+            -86.1403881,
+            42.4058531
+          ],
+          [
+            -86.1404396,
+            42.4059672
+          ],
+          [
+            -86.1404482,
+            42.4061066
+          ]
+        ]
+      },
+      "id": "way/796521739"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "way/796521740",
+        "highway": "raceway",
+        "oneway": "yes",
+        "sport": "motor",
+        "surface": "asphalt"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -86.1404482,
+            42.4061066
+          ],
+          [
+            -86.1404947,
+            42.4096457
+          ]
+        ]
+      },
+      "id": "way/796521740"
+    }
+  ]
+}
