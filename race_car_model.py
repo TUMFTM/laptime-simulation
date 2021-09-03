@@ -12,7 +12,7 @@ from definitions import (
     MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
     CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
     ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_TAG,
-    ROLLING_RESISTANCE_TAG
+    ROLLING_RESISTANCE_TAG, BATTERY_CHANGE_CONSTANT_TAG
 )
 
 class RaceCarModel():
@@ -46,6 +46,7 @@ class RaceCarModel():
 
     def set_inputs(self,
                    battery_size,
+                   battery_change_constant,
                    motor_max_torque,
                    gross_vehicle_weight,
                    weight_reduction,
@@ -55,6 +56,7 @@ class RaceCarModel():
 
         Inputs:
             - battery_size (float): battery size in kWh
+            - battery_change_constant (float): constant penalty for changing battery in minutes
             - motor_max_torque (float): maximum continuous motor torque in Nm
             - gross_vehicle_weight (float): vehicle weight from factory in kg
             - weight_reduction (float): weight reduced from removing unnecessary car components in kg
@@ -71,7 +73,8 @@ class RaceCarModel():
 
         # Battery Inputs/Independent Variables
         self._race_car_properties[BATTERY_SIZE_TAG] = battery_size
-
+        self._race_car_properties[BATTERY_CHANGE_CONSTANT_TAG] = battery_change_constant
+    
         # Motor Inputs/Independent Variables
         self._race_car_properties[MOTOR_MAX_TORQUE_TAG] = motor_max_torque
 
@@ -100,6 +103,7 @@ class RaceCarModel():
         """
         self.set_inputs(
             battery_size=inputs_variables[BATTERY_SIZE_TAG],
+            battery_change_constant=inputs_variables[BATTERY_CHANGE_CONSTANT_TAG],
             motor_max_torque=inputs_variables[MOTOR_MAX_TORQUE_TAG],
             gross_vehicle_weight=inputs_variables[GROSS_VEHICLE_WEIGHT_TAG],
             weight_reduction=inputs_variables[WEIGHT_REDUCTION_TAG],
@@ -228,7 +232,8 @@ class RaceCarModel():
 
         self._race_car_properties[PIT_TIME_TAG] = (
             self._race_car_properties[BATTERY_MASS_TAG] *
-            self._race_car_properties[BATTERY_MASS_PIT_FACTOR_TAG]
+            self._race_car_properties[BATTERY_MASS_PIT_FACTOR_TAG] +
+            self._race_car_properties[BATTERY_CHANGE_CONSTANT_TAG]
         )
 
         # Motor
@@ -387,6 +392,7 @@ if __name__ == '__main__':
 
     race_car.set_inputs(
         battery_size=10,
+        battery_change_constant=3,
         motor_max_torque=50,
         gross_vehicle_weight=1000,
         weight_reduction=200,

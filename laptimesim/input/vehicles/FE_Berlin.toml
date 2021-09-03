@@ -16,11 +16,12 @@
 # list of 3 float values which represent a range of values to iterate over
 # format [min_value, max_value, number_of_steps]
 
-# battery_size:         battery size in kWh
-# motor_max_torque:     maximum continuous motor torque in Nm
-# gross_vehicle_weight: vehicle weight from factory in kg
-# weight_reduction:     weight reduced from removing unnecessary car components in kg
-# coefficient_of_drag:  coefficient of drag of car (unitless)
+# battery_size:             battery size in kWh
+# battery_change_constant:  constant time penalty for changing battery in minutes
+# motor_max_torque:         maximum continuous motor torque in Nm
+# gross_vehicle_weight:     vehicle weight from factory in kg
+# weight_reduction:         weight reduced from removing unnecessary car components in kg
+# coefficient_of_drag:      coefficient of drag of car (unitless)
 
 # RELATIONSHIP VARIABLES
 # Relationship variables must be a single float value and represent
@@ -38,6 +39,7 @@
 [car_properties_]
     [car_properties_.independent_variables]
         battery_size = [10.0, 100.0, 10.0]  # kWh
+        battery_change_constant = 3  # minutes
         motor_max_torque = [100.0, 300.0, 10.0]  # Nm
         gross_vehicle_weight = 1200  # kg
         weight_reduction = 200  # kg

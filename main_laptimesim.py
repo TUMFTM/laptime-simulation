@@ -193,7 +193,7 @@ def main(track_opts: dict,
 
             current_lap_car_variables = single_simulation_data.race_car_model.get_vehicle_properties()
 
-            # change mass of vehicle
+            # change properties of vehicle in the lap simulation
             lap.driverobj.carobj.pars_general["m"] = current_lap_car_variables[TOTAL_VEHICLE_MASS_TAG]
             lap.driverobj.carobj.pars_general["c_w_a"] = current_lap_car_variables[C_W_A_TAG]
             lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
@@ -203,8 +203,10 @@ def main(track_opts: dict,
             # simulate lap and save lap time
             lap.simulate_lap()
 
-            race_sim = RaceSim(pit_time=current_lap_car_variables[PIT_TIME_TAG],
-                                gwc_times=track_pars["gwc_times"],
+            total_pit_time = current_lap_car_variables[PIT_TIME_TAG] + track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
+
+            race_sim = RaceSim(pit_time=total_pit_time,
+                                gwc_times=datastore.track_pars[GWC_TIMES_TAG],
                                 lap_time=lap.t_cl[-1],
                                 energy_per_lap=lap.e_cons_cl[-1],
                                 battery_capacity=current_lap_car_variables[BATTERY_SIZE_TAG])
@@ -228,7 +230,9 @@ def main(track_opts: dict,
 
             lap.reset_lap()
 
-            print("SA: Finished solver run (%i)" % (i + 1))
+            print("Solver run {}. Winning car: {}, total laps: {}".format(i,
+                                                                          is_winning_car_configuration,
+                                                                          race_sim.total_laps ))
     print("total simulation time: {}"
           .format(time.perf_counter() - t_start))
 
@@ -282,12 +286,14 @@ if __name__ == '__main__':
     car_properties[CHASSIS_BATTERY_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_battery_mass_factor"]
     car_properties[CHASSIS_MOTOR_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_motor_mass_factor"]
     car_properties[ROLLING_RESISTANCE_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["rolling_resistance_mass_factor"]
+    car_properties[BATTERY_CHANGE_CONSTANT_TAG] = car_properties_["independent_variables"]["battery_change_constant"]
 
     # get track parameters
     track_pars_ = track_config[track_opts_["trackname"]]
-    track_pars_[WINNING_ELECTRIC_CAR_TAG] = track_pars_["winning_laps"]
+    track_pars_[WINNING_GAS_CAR_LAPS] = track_pars_["winning_laps"]
     track_pars_[PIT_DRIVE_THROUGH_PENALTY_TIME] = track_pars_["pit_penalty"]
     track_pars_[GWC_TIMES_TAG] = track_pars_["gwc_times"]
+
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------

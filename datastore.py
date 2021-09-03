@@ -354,7 +354,7 @@ class DataStore():
 
             results = self.single_iteration_data[iteration].get_results()
 
-            results[WINNING_GAS_CAR_LAPS] = self.track_pars[WINNING_ELECTRIC_CAR_TAG]
+            results[WINNING_GAS_CAR_LAPS] = self.track_pars[WINNING_GAS_CAR_LAPS]
             results[PIT_DRIVE_THROUGH_PENALTY_TIME] = self.track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
             results[GWC_TIMES_TAG] = self.track_pars[GWC_TIMES_TAG]
             
