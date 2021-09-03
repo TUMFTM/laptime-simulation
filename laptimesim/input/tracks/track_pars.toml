@@ -13,7 +13,7 @@
 #                             must be a list of times, one time for each day
 # winning_laps:     [-] number of winning laps of the best gas car
 # pit_penalty:      [minutes] number of additional minutes it takes to DRIVE through pit lane
-#                             the time to change the battery is in the car config and will be added to this
+#                             this is NOT the time to change the battery, that is defined in the car definition file
 
 
 [CarolinaMotorsportsPark]

@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pkg_resources
 import toml
-import argparse
 
 from definitions import *  # FIXME enumerate imports
 from datastore import (DataStore)
@@ -178,7 +177,7 @@ def main(track_opts: dict,
         # output file 
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
-        datastore = DataStore(results_file_name=resultsfile)
+        datastore = DataStore(results_file_name=resultsfile, track_pars=track_pars)
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
@@ -216,14 +215,16 @@ def main(track_opts: dict,
             for day in race_sim.race_days:
                 total_pits += day.number_of_pits
                 energy_remaining += day.energy_remaining
-            
+
+            is_winning_car_configuration = race_sim.total_laps > track_pars["winning_laps"]
+
             datastore.set_single_iteration_results(iteration=i,
                                                    lap_time=lap.t_cl[-1],
                                                    total_laps=race_sim.total_laps,
                                                    lap_energy=lap.e_cons_cl[-1]/1000, # 1000 factor fo J -> kJ
                                                    total_pits=total_pits,
-                                                   gwc_times=track_pars["gwc_times"],
-                                                   energy_remaining=energy_remaining) 
+                                                   energy_remaining=energy_remaining,
+                                                   is_winning_car_configuration=is_winning_car_configuration) 
 
             lap.reset_lap()
 
@@ -284,6 +285,9 @@ if __name__ == '__main__':
 
     # get track parameters
     track_pars_ = track_config[track_opts_["trackname"]]
+    track_pars_[WINNING_ELECTRIC_CAR_TAG] = track_pars_["winning_laps"]
+    track_pars_[PIT_DRIVE_THROUGH_PENALTY_TIME] = track_pars_["pit_penalty"]
+    track_pars_[GWC_TIMES_TAG] = track_pars_["gwc_times"]
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------

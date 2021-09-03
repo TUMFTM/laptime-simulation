@@ -13,12 +13,12 @@ from race_car_model import (
 )
 
 from definitions import (
-    GWC_TIMES_TAG, ITER_TAG, TOTAL_PITS_TAG, TOTAL_PITS_TAG, 
+    GWC_TIMES_TAG, ITER_TAG, PIT_DRIVE_THROUGH_PENALTY_TIME, TOTAL_PITS_TAG, TOTAL_PITS_TAG, 
     VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
     LAP_ENERGY_TAG, ENERGY_REMAINING_TAG,
 
     REQUIRED_INPUTS, HEADER_ROW,
-    INPUT_VARIABLES, RELATIONSHIP_VARIABLES
+    INPUT_VARIABLES, RELATIONSHIP_VARIABLES, WINNING_ELECTRIC_CAR_TAG, WINNING_GAS_CAR_LAPS
 )
 
 
@@ -42,7 +42,7 @@ class SingleIterationData():
 
     def set_results(
             self, lap_time, total_laps, energy_per_lap, total_pits,
-            gwc_times, energy_remaining
+            energy_remaining, is_winning_car_configuration
         ):
         """ Set results from the completed lap and set the
         iteration complete flag to allow accessing results.
@@ -56,8 +56,8 @@ class SingleIterationData():
         self._results_list[TOTAL_LAPS_TAG] = total_laps
         self._results_list[LAP_ENERGY_TAG] = energy_per_lap
         self._results_list[TOTAL_PITS_TAG] = total_pits
-        self._results_list[GWC_TIMES_TAG] = gwc_times
         self._results_list[ENERGY_REMAINING_TAG] = energy_remaining
+        self._results_list[WINNING_ELECTRIC_CAR_TAG] = is_winning_car_configuration
         
     
     def get_results(self):
@@ -68,7 +68,7 @@ class SingleIterationData():
 
 
 class DataStore():
-    def __init__(self, results_file_name):
+    def __init__(self, results_file_name, track_pars):
         """ Initialize datastore and start output file
         
         This datastore is intended to be the main interaction to
@@ -97,6 +97,7 @@ class DataStore():
 
         Inputs:
             - results_file_name (str): file name for output file 
+            - track_pars (dict): dictionary of track parameters of a single track from track_pars.toml
         """
 
         self.add_results_lock = threading.Lock()
@@ -104,6 +105,7 @@ class DataStore():
         self.results_file_writer = csv.DictWriter(results_file,
                                                   fieldnames=HEADER_ROW,
                                                   )
+        self.track_pars = track_pars
         self.results_list = []
 
         self.results_file_writer.writeheader()
@@ -310,14 +312,14 @@ class DataStore():
             iteration_data = SingleIterationData(iteration_number=i,
                                                  vehicle_name="FIXME",
                                                  race_car_model=race_car_model
-                                                )
+                                                 )
             self.single_iteration_data[i] = iteration_data
             self._total_iterations = i + 1 # enumerate is 0 based
 
 
     def set_single_iteration_results(
         self, iteration, lap_time, lap_energy, total_laps,
-        total_pits, gwc_times, energy_remaining
+        total_pits, energy_remaining, is_winning_car_configuration
     ):
         """Method to set results of a single lap.
         Saves to datastore and writes out to csv file
@@ -331,6 +333,8 @@ class DataStore():
             - total_pits (int): total number of pits in race,
             - gwc_times (list): green-white-checkered flag times
             - energy_remaining (float): sum of percentage of battery energy remaining in race
+            - is_winning_car_configuration (bool): True if the electric car does more laps in the race
+                than the winning gas car
 
         Outputs: Nothing
         
@@ -342,11 +346,16 @@ class DataStore():
                                                               total_laps=total_laps,
                                                               energy_remaining=energy_remaining,
                                                               total_pits=total_pits,
-                                                              gwc_times=gwc_times)
+                                                              is_winning_car_configuration=is_winning_car_configuration)
 
             # Write results to file
             # this should work magically because the csv writer is type DictWriter
             # all data should be in the properly labeled columns
 
             results = self.single_iteration_data[iteration].get_results()
+
+            results[WINNING_GAS_CAR_LAPS] = self.track_pars[WINNING_ELECTRIC_CAR_TAG]
+            results[PIT_DRIVE_THROUGH_PENALTY_TIME] = self.track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
+            results[GWC_TIMES_TAG] = self.track_pars[GWC_TIMES_TAG]
+            
             self.results_file_writer.writerow(results)
