@@ -40,7 +40,7 @@
     [car_properties_.independent_variables]
         battery_size = [10.0, 100.0, 10.0]  # kWh
         battery_change_constant = 3  # minutes
-        motor_max_torque = [100.0, 300.0, 10.0]  # Nm
+        motor_max_torque = [100.0, 300.0, 3.0]  # Nm
         gross_vehicle_weight = 1200  # kg
         weight_reduction = 200  # kg
         coefficient_of_drag = 0.3  # unitless

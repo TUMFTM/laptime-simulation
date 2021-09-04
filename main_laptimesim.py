@@ -171,6 +171,10 @@ def main(track_opts: dict,
 
             # plot engine speed and gear selection
             lap.plot_enginespeed_gears()
+    if not sa_opts["use_sa"]:
+        if debug_opts["use_plot"]:
+            lap.plot_overview()
+            lap.plot_revs_gears()
 
     else:
 
@@ -235,19 +239,19 @@ def main(track_opts: dict,
             print("Solver run {}. Winning car?: {}, total laps: {}".format(i,
                                                                           is_winning_car_configuration,
                                                                           race_sim.total_laps ))
-    best_results, multiple_optimum_results = datastore.get_best_result()
+        best_results, multiple_optimum_results = datastore.get_best_result()
 
-    print("Best result was iteration: {}".format(best_results[ITER_TAG]))
-    print("{}: {}".format(WINNING_ELECTRIC_CAR_TAG, best_results[WINNING_ELECTRIC_CAR_TAG]))
-    print("{}: {}".format(TOTAL_LAPS_TAG, best_results[TOTAL_LAPS_TAG]))
-    print("{}: {}".format(WINNING_GAS_CAR_LAPS, track_pars[WINNING_GAS_CAR_LAPS]))
-    print("{}: {}".format(TOTAL_PITS_TAG, best_results[TOTAL_PITS_TAG]))
-    print("{}: {}".format(LAP_ENERGY_TAG, best_results[LAP_ENERGY_TAG]))
-    print("{}: {}".format(ENERGY_REMAINING_TAG, best_results[ENERGY_REMAINING_TAG]))
-    print("{}: {}".format(BATTERY_SIZE_TAG, best_results[BATTERY_SIZE_TAG]))
-    print("Are there multiple optimum results?: {}".format(multiple_optimum_results))
-    print("total simulation time: {}"
-          .format(time.perf_counter() - t_start))
+        print("Best result was iteration: {}".format(best_results[ITER_TAG]))
+        print("{}: {}".format(WINNING_ELECTRIC_CAR_TAG, best_results[WINNING_ELECTRIC_CAR_TAG]))
+        print("{}: {}".format(TOTAL_LAPS_TAG, best_results[TOTAL_LAPS_TAG]))
+        print("{}: {}".format(WINNING_GAS_CAR_LAPS, track_pars[WINNING_GAS_CAR_LAPS]))
+        print("{}: {}".format(TOTAL_PITS_TAG, best_results[TOTAL_PITS_TAG]))
+        print("{}: {}".format(LAP_ENERGY_TAG, best_results[LAP_ENERGY_TAG]))
+        print("{}: {}".format(ENERGY_REMAINING_TAG, best_results[ENERGY_REMAINING_TAG]))
+        print("{}: {}".format(BATTERY_SIZE_TAG, best_results[BATTERY_SIZE_TAG]))
+        print("Are there multiple optimum results?: {}".format(multiple_optimum_results))
+        print("total simulation time: {}"
+            .format(time.perf_counter() - t_start))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN FUNCTION CALL ---------------------------------------------------------------------------------------------------

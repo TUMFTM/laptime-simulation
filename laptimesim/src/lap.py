@@ -711,10 +711,8 @@ class Lap(object):
 
     def plot_lat_acc(self):
         a_y_tmp = np.power(self.vel_cl[:-1], 2) * self.trackobj.kappa
-        if self.pars_solver["series"] == "F1":
-            a_y_valid = 50.0
-        else:
-            a_y_valid = 30.0
+
+        a_y_valid = 30.0
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -743,12 +741,9 @@ class Lap(object):
 
     def plot_tire_loads(self):
         f_z_stat_avg = 0.25 * self.driverobj.carobj.pars_general["m"] * self.driverobj.carobj.pars_general["g"]
-        if self.pars_solver["series"] == "F1":
-            f_z_dyn_valid = f_z_stat_avg * 5.0
-            legend_text = "5 * avg. static"
-        else:
-            f_z_dyn_valid = f_z_stat_avg * 3.0
-            legend_text = "3 * avg. static"
+
+        f_z_dyn_valid = f_z_stat_avg * 3.0
+        legend_text = "3 * avg. static"
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -777,10 +772,7 @@ class Lap(object):
         f_x_aero = 0.5 * c_w_a * rho_air * np.power(self.vel_cl[:-1], 2)
         f_z_aero = 0.5 * (c_z_a_f + c_z_a_r) * rho_air * np.power(self.vel_cl[:-1], 2)
 
-        if self.pars_solver["series"] == "F1":
-            f_z_aero_valid = 18e3
-        else:
-            f_z_aero_valid = 6e3
+        f_z_aero_valid = 6e3
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
