@@ -363,3 +363,38 @@ class DataStore():
             results[GWC_TIMES_TAG] = self.track_pars[GWC_TIMES_TAG]
             
             self.results_file_writer.writerow(results)
+    
+    def get_best_result(self):
+        """Gets information about the result that 
+        did the best after all of the simulations have run
+        
+        Inputs: 
+            - None
+        Outputs: 
+            - best_results (dict): dictionary returned from SingleIterationData.get_results()
+            - multiple_optimum_results (bool): True if there are multiple results that have the same 
+                                               total number of laps
+        Raises: 
+            - Nothing
+        """
+
+        # Find best iteration
+
+        max_laps = 0
+        best_iteration = 0
+        multiple_optimum_results = False
+
+        for key in self.single_iteration_data:
+            results = self.single_iteration_data[key].get_results()
+
+            if results[TOTAL_LAPS_TAG] == max_laps:
+                multiple_optimum_results = True
+            if results[TOTAL_LAPS_TAG] > max_laps:
+                best_iteration = results[ITER_TAG]
+                max_laps = results[TOTAL_LAPS_TAG]
+                multiple_optimum_results = False
+
+        best_single_iteration = self.single_iteration_data[best_iteration]
+        best_results = best_single_iteration.get_results()
+
+        return best_results, multiple_optimum_results
