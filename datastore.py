@@ -50,7 +50,10 @@ class SingleIterationData():
 
         self._iteration_complete = True
 
-        self._results_list = self.race_car_model.get_vehicle_properties()
+        race_car_properties = self.race_car_model.get_vehicle_properties()
+
+        for key in race_car_properties:
+            self._results_list[key] = race_car_properties[key]
         self._results_list[ITER_TAG] = self.iteration_number
         self._results_list[LAPTIME_TAG] = lap_time
         self._results_list[TOTAL_LAPS_TAG] = total_laps
@@ -58,7 +61,7 @@ class SingleIterationData():
         self._results_list[TOTAL_PITS_TAG] = total_pits
         self._results_list[ENERGY_REMAINING_TAG] = energy_remaining
         self._results_list[WINNING_ELECTRIC_CAR_TAG] = is_winning_car_configuration
-        
+
     
     def get_results(self):
         if self._iteration_complete:
@@ -68,7 +71,7 @@ class SingleIterationData():
 
 
 class DataStore():
-    def __init__(self, results_file_name, track_pars):
+    def __init__(self, results_file_name, track_pars, car_name):
         """ Initialize datastore and start output file
         
         This datastore is intended to be the main interaction to
@@ -98,6 +101,7 @@ class DataStore():
         Inputs:
             - results_file_name (str): file name for output file 
             - track_pars (dict): dictionary of track parameters of a single track from track_pars.toml
+            - car_name (str): name of car used in the simulation
         """
 
         self.add_results_lock = threading.Lock()
@@ -106,6 +110,7 @@ class DataStore():
                                                   fieldnames=HEADER_ROW,
                                                   )
         self.track_pars = track_pars
+        self.car_name = car_name
         self.results_list = []
 
         self.results_file_writer.writeheader()
@@ -310,7 +315,7 @@ class DataStore():
                 continue
 
             iteration_data = SingleIterationData(iteration_number=i,
-                                                 vehicle_name="FIXME",
+                                                 vehicle_name=self.car_name,
                                                  race_car_model=race_car_model
                                                  )
             self.single_iteration_data[i] = iteration_data
@@ -353,7 +358,6 @@ class DataStore():
             # all data should be in the properly labeled columns
 
             results = self.single_iteration_data[iteration].get_results()
-
             results[WINNING_GAS_CAR_LAPS] = self.track_pars[WINNING_GAS_CAR_LAPS]
             results[PIT_DRIVE_THROUGH_PENALTY_TIME] = self.track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
             results[GWC_TIMES_TAG] = self.track_pars[GWC_TIMES_TAG]

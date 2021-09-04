@@ -177,7 +177,9 @@ def main(track_opts: dict,
         # output file 
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
-        datastore = DataStore(results_file_name=resultsfile, track_pars=track_pars)
+        datastore = DataStore(results_file_name=resultsfile,
+                              track_pars=track_pars,
+                              car_name=veh_pars[VEHICLE_TAG])
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
@@ -266,6 +268,7 @@ if __name__ == '__main__':
     # see the car_config for variable details
     car_properties_ = car_config["car_properties_"]
     veh_pars_ = car_config["veh_pars_"]
+    veh_pars_[VEHICLE_TAG] = car_name
 
     # Remap characteristics to the tag constants that are used throughout
     # the simulation
