@@ -121,6 +121,7 @@ booktitle = {2019 Fourteenth International Conference on Ecological Vehicles and
 ```
 
 # Related open-source repositories
-* Race simulation: https://github.com/TUMFTM/race-simulation
+* Lap-discrete race simulation: https://github.com/TUMFTM/race-simulation
+* Time-discrete race simulator: https://github.com/heilmeiera/time-discrete-race-simulator
 * Race track database: https://github.com/TUMFTM/racetrack-database
 * Formula 1 timing database: https://github.com/TUMFTM/f1-timing-database
