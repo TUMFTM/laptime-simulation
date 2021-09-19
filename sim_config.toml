@@ -71,7 +71,7 @@
     yellow_s2 = false
     yellow_s3 = false
     yellow_throttle = 0.3
-    initial_energy = 4.58e6
+    initial_energy = 0  # must always be zero for race_sim calculations to be correct!
     em_strategy = "FCFB"  # Must be FCFB
     use_recuperation = false
     use_lift_coast = false
@@ -93,7 +93,7 @@
 [debug_opts_]
     use_plot = true
     use_debug_plots = true
-    use_plot_comparison_tph = false
+    use_plot_comparison_tph = true
     use_print = false
     use_print_result = true
 
