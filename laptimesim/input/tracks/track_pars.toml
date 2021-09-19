@@ -1,0 +1,77 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# Track Parameters
+
+# s12:              [m] sector boundary s1 -> s2
+# s23:              [m] sector boundary s2 -> s3
+# mu_mean:          [-] mean friction value of track
+# drs1_act:         [m] -> set 0.0 if there is no DRS, e.g. in FE
+# drs1_deact:       [m] -> set 0.0 if there is no DRS, e.g. in FE
+# pitspeed:         [m/s] allowed speed in pit
+# pit_in:           [m] pit entry
+# pit_out:          [m] pit exit
+# gwc_times:        [minutes] list of "Green", "White", "Checkered" flag times for each day
+#                             must be a list of times, one time for each day
+# winning_laps:     [-] number of winning laps of the best gas car
+# pit_penalty:      [minutes] number of additional minutes it takes to DRIVE through pit lane
+#                             this is NOT the time to change the battery, that is defined in the car definition file
+
+
+[CarolinaMotorsportsPark]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+    gwc_times = [8, 8]
+    winning_laps = 9001
+    pit_penalty = 1
+
+[Gingerman]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+    gwc_times = [7, 8]
+    winning_laps = 9001
+    pit_penalty = 1
+
+[HighPlainsFullTrack]
+    s12 = 2000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+    gwc_times = [420, 420]
+    winning_laps = 200
+    pit_penalty = 1
+
+[Sonoma]
+    s12 = 1000.0
+    s23 = 3000.0
+    mu_mean = 1.0
+    drs1_act = 0.0
+    drs1_deact = 0.0
+    drs2_act = 0.0
+    drs2_deact = 0.0
+    pitspeed = 22.222
+    pit_in = 0.0
+    pit_out = 0.0
+    gwc_times = [9, 9]
+    winning_laps = 9001
+    pit_penalty = 1

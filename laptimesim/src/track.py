@@ -38,20 +38,19 @@ class Track(object):
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, pars_track: dict, parfilepath: str, trackfilepath: str, vel_lim_glob: float = np.inf,
+    def __init__(self, track_opts: dict, track_pars: dict, trackfilepath: str, vel_lim_glob: float = np.inf,
                  yellow_s1: bool = False, yellow_s2: bool = False, yellow_s3: bool = False):
 
         # save given track parameters, load track parameters and append the relevant ones to pars_track
-        self.pars_track = pars_track
+        # MH: sorry this naming is very confusing
+        # all of the track options get put together into a dictionary anyway
+        # so I'm leaving the confusing names and just changing in the import section
+        # of this object
+        self.pars_track = track_opts
 
-        parser = configparser.ConfigParser()
-
-        if not parser.read(parfilepath):
-            raise RuntimeError('Specified config file does not exist or is empty!')
-
-        pars_track_tmp = json.loads(parser.get('TRACK_PARS', 'track_pars'))
-
-        self.pars_track.update(pars_track_tmp[self.pars_track["trackname"]])
+        # reassign
+        for key in track_pars:
+            self.pars_track[key] = track_pars[key]
 
         # load raceline
         self.raceline = np.loadtxt(trackfilepath, comments='#', delimiter=',')
@@ -273,12 +272,6 @@ class Track(object):
         # initialize pit zone indices
         self.zone_inds["pit_in"] = 0
         self.zone_inds["pit_out"] = 0
-
-        # check if pit zone is set properly
-        if self.pars_track["use_pit"] and (math.isclose(self.pars_track["pit_in"], 0.0)
-                                           or math.isclose(self.pars_track["pit_out"], 0.0)):
-            print("WARNING: Pit zone is not set properly. Therefore, pit stop gets deactivated!")
-            self.pars_track["use_pit"] = False
 
         # set indices
         if self.pars_track["use_pit"]:

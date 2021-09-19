@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pkg_resources
 import toml
-import argparse
 
 from definitions import *  # FIXME enumerate imports
 from datastore import (DataStore)
@@ -37,9 +36,9 @@ def main(track_opts: dict,
          driver_opts: dict,
          sa_opts: dict,
          debug_opts: dict,
-         race_characteristics: dict,
          car_properties: dict,
-         veh_pars: dict) -> laptimesim.src.lap.Lap:
+         veh_pars: dict,
+         track_pars: dict,) -> laptimesim.src.lap.Lap:
 
     # ------------------------------------------------------------------------------------------------------------------
     # CHECK PYTHON DEPENDENCIES ----------------------------------------------------------------------------------------
@@ -82,21 +81,14 @@ def main(track_opts: dict,
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    parfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "track_pars.ini")
-
-    if not track_opts["use_pit"]:  # normal case
-        trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                     track_opts["trackname"] + ".csv")
-
-    else:  # case pit
-        trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                     track_opts["trackname"] + "_pit.csv")
+    trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
+                                    track_opts["trackname"] + ".csv")
 
     vel_lim_glob = np.inf
 
     # create instance
-    track = laptimesim.src.track.Track(pars_track=track_opts,
-                                       parfilepath=parfilepath,
+    track = laptimesim.src.track.Track(track_opts=track_opts,
+                                       track_pars=track_pars,
                                        trackfilepath=trackfilepath,
                                        vel_lim_glob=vel_lim_glob,
                                        yellow_s1=driver_opts["yellow_s1"],
@@ -179,13 +171,19 @@ def main(track_opts: dict,
 
             # plot engine speed and gear selection
             lap.plot_enginespeed_gears()
+    if not sa_opts["use_sa"]:
+        if debug_opts["use_plot"]:
+            lap.plot_overview()
+            lap.plot_revs_gears()
 
     else:
 
         # output file 
         date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
-        datastore = DataStore(results_file_name=resultsfile)
+        datastore = DataStore(results_file_name=resultsfile,
+                              track_pars=track_pars,
+                              car_name=veh_pars[VEHICLE_TAG])
 
         # sensitivity analysis -----------------------------------------------------------------------------------------
 
@@ -201,7 +199,7 @@ def main(track_opts: dict,
 
             current_lap_car_variables = single_simulation_data.race_car_model.get_vehicle_properties()
 
-            # change mass of vehicle
+            # change properties of vehicle in the lap simulation
             lap.driverobj.carobj.pars_general["m"] = current_lap_car_variables[TOTAL_VEHICLE_MASS_TAG]
             lap.driverobj.carobj.pars_general["c_w_a"] = current_lap_car_variables[C_W_A_TAG]
             lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
@@ -211,8 +209,10 @@ def main(track_opts: dict,
             # simulate lap and save lap time
             lap.simulate_lap()
 
-            race_sim = RaceSim(pit_time=current_lap_car_variables[PIT_TIME_TAG],
-                                gwc_times=race_characteristics["gwc_times"],
+            total_pit_time = current_lap_car_variables[PIT_TIME_TAG] + track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
+
+            race_sim = RaceSim(pit_time=total_pit_time,
+                                gwc_times=datastore.track_pars[GWC_TIMES_TAG],
                                 lap_time=lap.t_cl[-1],
                                 energy_per_lap=lap.e_cons_cl[-1],
                                 battery_capacity=current_lap_car_variables[BATTERY_SIZE_TAG])
@@ -222,43 +222,53 @@ def main(track_opts: dict,
             energy_remaining = 0
             for day in race_sim.race_days:
                 total_pits += day.number_of_pits
-                energy_remaining += day.energy_remaining
-            
+                energy_remaining += day.energy_remaining*100  # for percentage conversion
+
+            is_winning_car_configuration = race_sim.total_laps > track_pars["winning_laps"]
+
             datastore.set_single_iteration_results(iteration=i,
                                                    lap_time=lap.t_cl[-1],
                                                    total_laps=race_sim.total_laps,
                                                    lap_energy=lap.e_cons_cl[-1]/1000, # 1000 factor fo J -> kJ
                                                    total_pits=total_pits,
-                                                   gwc_times=race_characteristics["gwc_times"],
-                                                   energy_remaining=energy_remaining) 
+                                                   energy_remaining=energy_remaining,
+                                                   is_winning_car_configuration=is_winning_car_configuration) 
 
             lap.reset_lap()
 
-            print("SA: Finished solver run (%i)" % (i + 1))
-    print("total simulation time: {}"
-          .format(time.perf_counter() - t_start))
+            print("Solver run {}. Winning car?: {}, total laps: {}".format(i,
+                                                                          is_winning_car_configuration,
+                                                                          race_sim.total_laps ))
+        best_results, multiple_optimum_results = datastore.get_best_result()
 
-def parse_args():
-    arg_parser = argparse.ArgumentParser("Simulate laptimes and total laps over many car property iterations")
-
-    arg_parser.add_argument('-s', '--sim-config', default='./sim_config.toml',
-                            help="path to sim_config")
-    arg_parser.add_argument('-c', '--car-config', default='./laptimesim/input/vehicles/FE_Berlin.toml',
-                            help="path to car_config")
-    
-    args = arg_parser.parse_args()
-
-    return args
+        print("Best result was iteration: {}".format(best_results[ITER_TAG]))
+        print("{}: {}".format(WINNING_ELECTRIC_CAR_TAG, best_results[WINNING_ELECTRIC_CAR_TAG]))
+        print("{}: {}".format(TOTAL_LAPS_TAG, best_results[TOTAL_LAPS_TAG]))
+        print("{}: {}".format(WINNING_GAS_CAR_LAPS, track_pars[WINNING_GAS_CAR_LAPS]))
+        print("{}: {}".format(TOTAL_PITS_TAG, best_results[TOTAL_PITS_TAG]))
+        print("{}: {}".format(LAP_ENERGY_TAG, best_results[LAP_ENERGY_TAG]))
+        print("{}: {}".format(ENERGY_REMAINING_TAG, best_results[ENERGY_REMAINING_TAG]))
+        print("{}: {}".format(BATTERY_SIZE_TAG, best_results[BATTERY_SIZE_TAG]))
+        print("Are there multiple optimum results?: {}".format(multiple_optimum_results))
+        print("total simulation time: {}"
+            .format(time.perf_counter() - t_start))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # MAIN FUNCTION CALL ---------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    args = parse_args()
+
     # Importing config from sim_config.toml
-    config = toml.load(args.sim_config)
-    car_config = toml.load(args.car_config)
+
+    # get repo path
+    repo_path = os.path.dirname(os.path.abspath(__file__))
+
+    config = toml.load(os.path.join(repo_path, "sim_config.toml"))
+    car_name = config["car_opts_"]["car"]
+    car_name = "{}.toml".format(car_name)
+    car_config = toml.load(os.path.join(repo_path, "laptimesim", "input", "vehicles", car_name))
+    track_config = toml.load(os.path.join(repo_path, "laptimesim", "input", "tracks", "track_pars.toml"))
  
     # ------------------------------------------------------------------------------------------------------------------
     # USER INPUT -------------------------------------------------------------------------------------------------------
@@ -269,11 +279,11 @@ if __name__ == '__main__':
     driver_opts_ = config["driver_opts_"]
     sa_opts_ = config["sa_opts_"]
     debug_opts_ = config["debug_opts_"]
-    race_characteristics_ = config["race_characteristics_"]
 
     # see the car_config for variable details
     car_properties_ = car_config["car_properties_"]
     veh_pars_ = car_config["veh_pars_"]
+    veh_pars_[VEHICLE_TAG] = car_name
 
     # Remap characteristics to the tag constants that are used throughout
     # the simulation
@@ -294,6 +304,13 @@ if __name__ == '__main__':
     car_properties[CHASSIS_BATTERY_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_battery_mass_factor"]
     car_properties[CHASSIS_MOTOR_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_motor_mass_factor"]
     car_properties[ROLLING_RESISTANCE_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["rolling_resistance_mass_factor"]
+    car_properties[BATTERY_CHANGE_CONSTANT_TAG] = car_properties_["independent_variables"]["battery_change_constant"]
+
+    # get track parameters
+    track_pars_ = track_config[track_opts_["trackname"]]
+    track_pars_[WINNING_GAS_CAR_LAPS] = track_pars_["winning_laps"]
+    track_pars_[PIT_DRIVE_THROUGH_PENALTY_TIME] = track_pars_["pit_penalty"]
+    track_pars_[GWC_TIMES_TAG] = track_pars_["gwc_times"]
 
     # ------------------------------------------------------------------------------------------------------------------
     # SIMULATION CALL --------------------------------------------------------------------------------------------------
@@ -304,6 +321,6 @@ if __name__ == '__main__':
          driver_opts=driver_opts_,
          sa_opts=sa_opts_,
          debug_opts=debug_opts_,
-         race_characteristics=race_characteristics_,
          car_properties=car_properties,
-         veh_pars=veh_pars_)
+         veh_pars=veh_pars_,
+         track_pars=track_pars_)
