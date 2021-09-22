@@ -63,6 +63,7 @@
 #                   currently only considered with FCFB)
 # use_lift_coast:   switch to turn lift and coast on/off
 # lift_coast_dist:  [m] lift and coast before braking point
+# use_braking:      set if braking is allowed
 
 [driver_opts_]
     vel_subtr_corner = 0.5
@@ -73,9 +74,10 @@
     yellow_throttle = 0.3
     initial_energy = 0  # must always be zero for race_sim calculations to be correct!
     em_strategy = "FCFB"  # Must be FCFB
-    use_recuperation = false
-    use_lift_coast = false
+    use_recuperation = true
+    use_lift_coast = true
     lift_coast_dist = 10.0
+    use_braking = true
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
 # use_sa:   switch to deactivate sensitivity analysis
