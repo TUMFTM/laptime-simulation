@@ -77,7 +77,7 @@
     use_recuperation = true
     use_lift_coast = true
     lift_coast_dist = 10.0
-    use_braking = true
+    disable_braking = true
 
 # sensitivity analysis options -------------------------------------------------------------------------------------
 # use_sa:   switch to deactivate sensitivity analysis
