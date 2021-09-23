@@ -797,6 +797,8 @@ class Lap(object):
                                 * self.driverobj.carobj.pars_engine["eta_e_motor_re"]
                             )
 
+                            if abs(self.m_e_motor[k]) > max_motor_torque:
+                                raise(Exception("Maximum motor torque exceeded: {}, max: {}".format(self.m_e_motor[k], max_motor_torque)))
 
                             if abs(self.m_e_motor[k]) > max_motor_torque:
                                 raise(Exception("Maximum motor torque exceeded: {}, max: {}".format(self.m_e_motor[k], max_motor_torque)))
