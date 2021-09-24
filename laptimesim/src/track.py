@@ -38,7 +38,7 @@ class Track(object):
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, track_opts: dict, track_pars: dict, trackfilepath: str, vel_lim_glob: float = np.inf,
+    def __init__(self, track_opts: dict, track_pars: dict, trackfilepath: str, elevationfilepath: str, vel_lim_glob: float = np.inf,
                  yellow_s1: bool = False, yellow_s2: bool = False, yellow_s3: bool = False):
 
         # save given track parameters, load track parameters and append the relevant ones to pars_track
@@ -54,6 +54,9 @@ class Track(object):
 
         # load raceline
         self.raceline = np.loadtxt(trackfilepath, comments='#', delimiter=',')
+
+        # load elevation profile
+        self.elevationprofile = np.loadtxt(elevationfilepath, delimiter=',')
 
         # set friction values artificially as long as no real friction values available and limit them to a valid range
         self.mu = np.ones(self.raceline.shape[0]) * self.pars_track["mu_mean"] * self.pars_track["mu_weather"]

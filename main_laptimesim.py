@@ -81,15 +81,18 @@ def main(track_opts: dict,
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                    track_opts["trackname"] + ".csv")
+    tmp_track_file_path = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
+                                    track_opts["trackname"])
+    trackfilepath = os.path.join(tmp_track_file_path + ".csv")
 
+    elevationfilepath = os.path.join(tmp_track_file_path + "_elevation" + ".csv")
     vel_lim_glob = np.inf
 
     # create instance
     track = laptimesim.src.track.Track(track_opts=track_opts,
                                        track_pars=track_pars,
                                        trackfilepath=trackfilepath,
+                                       elevationfilepath=elevationfilepath,
                                        vel_lim_glob=vel_lim_glob,
                                        yellow_s1=driver_opts["yellow_s1"],
                                        yellow_s2=driver_opts["yellow_s2"],

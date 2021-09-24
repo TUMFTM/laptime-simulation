@@ -438,11 +438,22 @@ class Lap(object):
                                           em_boost_use=self.driverobj.em_boost_use[i],
                                           vel=self.vel_cl[i])
 
+                # calculate the energy change due to elevation change
+                elevation_change = self.trackobj.elevationprofile[i + 1] - self.trackobj.elevationprofile[i]
+                elevation_energy = (
+                    elevation_change * 
+                    self.driverobj.carobj.pars_general["m"] *
+                    self.driverobj.carobj.pars_general["g"]
+                )
+
                 # calculate available acceleration force in powertrain
                 f_x_powert = (self.driverobj.carobj.pars_gearbox["eta_g"] * (self.m_eng[i] + self.m_e_motor[i])
                               / (self.driverobj.carobj.pars_gearbox["i_trans"][self.gear_cl[i]]
                                  * self.driverobj.carobj.r_driven_tire(vel=self.vel_cl[i])
                                  * self.driverobj.carobj.pars_gearbox["e_i"][self.gear_cl[i]]))
+                
+                # account for available force due to change in elevation
+                f_x_powert = f_x_powert - elevation_energy / self.trackobj.stepsize
 
                 # calculate reached longitudinal acceleration
                 a_x = ((f_x_powert - self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=self.trackobj.drs[i])
@@ -499,7 +510,7 @@ class Lap(object):
                 self.es_cl[i + 1] = self.es_cl[i] + e_rec_etc - e_cons_e_motor
 
                 if not self.driverobj.carobj.powertrain_type == "electric" and self.es_cl[i + 1] < 0.0:
-                    self.es_cl[i + 1] = 0.
+                    self.es_cl[i + 1] = 0.0
                 
                 self.e_motor_power[i] = self.driverobj.carobj.power_demand_e_motor_drive(n=self.n_cl[i],
                                                                                          m_e_motor=self.m_e_motor[i])
@@ -619,6 +630,15 @@ class Lap(object):
 
                             f_x_poss = min(f_x_poss, f_x_poss_torque, f_x_poss_power)
                         
+                        # calculate the energy change due to elevation change
+                        elevation_change = self.trackobj.elevationprofile[i - j - 1 + 1] - self.trackobj.elevationprofile[i - j - 1]
+                        elevation_energy = (
+                            elevation_change * 
+                            self.driverobj.carobj.pars_general["m"] *
+                            self.driverobj.carobj.pars_general["g"]
+                        )
+
+                        f_x_poss = f_x_poss - elevation_energy / self.trackobj.stepsize
 
                         # calculate deceleration
                         a_x = (-(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
@@ -682,8 +702,15 @@ class Lap(object):
                                 - math.pow(self.vel_cl[k], 2)) / (2 * self.trackobj.stepsize)
                     f_x_requ = self.driverobj.carobj.pars_general["m"] * a_x_requ
 
+                    elevation_change = self.trackobj.elevationprofile[k + 1] - self.trackobj.elevationprofile[k]
+                    elevation_energy = (
+                        elevation_change * 
+                        self.driverobj.carobj.pars_general["m"] *
+                        self.driverobj.carobj.pars_general["g"]
+                    )
+
                     # calculate force that must be provided by the powertrain (or brakes) to reach this acc. force
-                    f_x_powert = f_x_requ + f_x_resi
+                    f_x_powert = f_x_requ + f_x_resi - elevation_energy / self.trackobj.stepsize
 
                     # print("f_x_requ: {}, f_x_resi: {}, f_x_powert: {}, step: {}".format(f_x_requ, f_x_resi, f_x_powert, self.trackobj.stepsize))
 
