@@ -92,7 +92,7 @@ def main(track_opts: dict,
     track = laptimesim.src.track.Track(track_opts=track_opts,
                                        track_pars=track_pars,
                                        trackfilepath=trackfilepath,
-                                       elevationfilepath=elevationfilepath,
+                                       elevationfilepath=elevationfilepath, # hat do if we don't use elevation??
                                        vel_lim_glob=vel_lim_glob,
                                        yellow_s1=driver_opts["yellow_s1"],
                                        yellow_s2=driver_opts["yellow_s2"],

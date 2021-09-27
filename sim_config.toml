@@ -32,6 +32,7 @@
     use_drs1 = false
     use_drs2 = false
     use_pit = false
+    use_elevation = false
 
 # solver options ---------------------------------------------------------------------------------------------------
 # limit_braking_weak_side:  can be None, 'FA', 'RA', 'all' -> set if brake force potential should be determined

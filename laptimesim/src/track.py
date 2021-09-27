@@ -56,7 +56,16 @@ class Track(object):
         self.raceline = np.loadtxt(trackfilepath, comments='#', delimiter=',')
 
         # load elevation profile
-        self.elevationprofile = np.loadtxt(elevationfilepath, delimiter=',')
+        if self.pars_track["use_elevation"]:
+            self.elevationprofile = np.loadtxt(elevationfilepath, delimiter=',')
+
+            # make sure that the elevation and track profile are the same size 
+            # so the lap calculations can be completed.
+            if self.elevationprofile.shape[0] != self.raceline.shape[0]:
+                raise(Exception("Raceline and elevation profile must be the same size!" + 
+                        "Raceline: {}, elevation: {}".format(self.raceline.shape[0], self.elevationprofile.shape[0])))
+        else:
+            self.elevationprofile = np.ones(self.raceline.shape[0])
 
         # set friction values artificially as long as no real friction values available and limit them to a valid range
         self.mu = np.ones(self.raceline.shape[0]) * self.pars_track["mu_mean"] * self.pars_track["mu_weather"]
