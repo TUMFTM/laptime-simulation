@@ -38,7 +38,9 @@ class Car(object):
         self.pars_engine = pars_engine
         self.pars_gearbox = pars_gearbox
         self.pars_tires = pars_tires
+        self.calculate_static_parameters()
 
+    def calculate_static_parameters(self):
         # calculate static parts of tire load calculation
         self.f_z_calc_stat = {}
 
