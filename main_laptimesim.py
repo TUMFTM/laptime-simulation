@@ -205,6 +205,7 @@ def main(track_opts: dict,
             lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
             lap.driverobj.carobj.pars_general["f_roll"] = current_lap_car_variables[ROLLING_RESISTANCE_TAG]
             lap.driverobj.carobj.pars_engine["pow_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
+            lap.driverobj.carobj.calculate_static_parameters()
 
             # simulate lap and save lap time
             lap.simulate_lap()
