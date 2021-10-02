@@ -85,14 +85,12 @@ def main(track_opts: dict,
                                     track_opts["trackname"])
     trackfilepath = os.path.join(tmp_track_file_path + ".csv")
 
-    elevationfilepath = os.path.join(tmp_track_file_path + "_elevation" + ".csv")
     vel_lim_glob = np.inf
 
     # create instance
     track = laptimesim.src.track.Track(track_opts=track_opts,
                                        track_pars=track_pars,
                                        trackfilepath=trackfilepath,
-                                       elevationfilepath=elevationfilepath, # hat do if we don't use elevation??
                                        vel_lim_glob=vel_lim_glob,
                                        yellow_s1=driver_opts["yellow_s1"],
                                        yellow_s2=driver_opts["yellow_s2"],
@@ -114,6 +112,10 @@ def main(track_opts: dict,
 
         # plot curvature
         track.plot_curvature()
+
+        if track_opts["use_elevation"]:
+            track.plot_elevation()
+            track.plot_elevation_3d()
 
         # recalculate raceline based on curvature
         track.check_track()

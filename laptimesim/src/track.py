@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import json
 import trajectory_planning_helpers as tph
 import configparser
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class Track(object):
     """
@@ -32,13 +33,14 @@ class Track(object):
                  "__stepsize",
                  "__no_points",
                  "__no_points_cl",
-                 "__dists_cl")
+                 "__dists_cl",
+                 "__elevation_profile")
 
     # ------------------------------------------------------------------------------------------------------------------
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, track_opts: dict, track_pars: dict, trackfilepath: str, elevationfilepath: str, vel_lim_glob: float = np.inf,
+    def __init__(self, track_opts: dict, track_pars: dict, trackfilepath: str, vel_lim_glob: float = np.inf,
                  yellow_s1: bool = False, yellow_s2: bool = False, yellow_s3: bool = False):
 
         # save given track parameters, load track parameters and append the relevant ones to pars_track
@@ -57,15 +59,22 @@ class Track(object):
 
         # load elevation profile
         if self.pars_track["use_elevation"]:
-            self.elevationprofile = np.loadtxt(elevationfilepath, delimiter=',')
+
+            self.elevation_profile = []
+            raceline_tmp = []
+            for row in self.raceline:
+                self.elevation_profile.append(row[2])
+                raceline_tmp.append([row[0], row[1]])
+            self.raceline = raceline_tmp
+
 
             # make sure that the elevation and track profile are the same size 
             # so the lap calculations can be completed.
-            if self.elevationprofile.shape[0] != self.raceline.shape[0]:
+            if len(self.elevation_profile) != self.raceline.shape[0]:
                 raise(Exception("Raceline and elevation profile must be the same size!" + 
-                        "Raceline: {}, elevation: {}".format(self.raceline.shape[0], self.elevationprofile.shape[0])))
+                        "Raceline: {}, elevation: {}".format(self.raceline.shape[0], self.elevation_profile.shape[0])))
         else:
-            self.elevationprofile = np.ones(self.raceline.shape[0])
+            self.elevation_profile = np.ones(self.raceline.shape[0])
 
         # set friction values artificially as long as no real friction values available and limit them to a valid range
         self.mu = np.ones(self.raceline.shape[0]) * self.pars_track["mu_mean"] * self.pars_track["mu_weather"]
@@ -147,6 +156,10 @@ class Track(object):
     def __get_dists_cl(self) -> np.ndarray: return self.__dists_cl
     def __set_dists_cl(self, x: np.ndarray) -> None: self.__dists_cl = x
     dists_cl = property(__get_dists_cl, __set_dists_cl)
+
+    def __get_elevation_profile(self) -> np.ndarray: return self.__elevation_profile
+    def __set_elevation_profile(self, x: np.ndarray) -> None: self.__elevation_profile = x
+    elevation_profile = property(__get_elevation_profile, __set_elevation_profile)
 
     # ------------------------------------------------------------------------------------------------------------------
     # METHODS (CALCULATIONS) -------------------------------------------------------------------------------------------
@@ -506,6 +519,68 @@ class Track(object):
                                                                                  pt_handle=pt_handle,
                                                                                  txt_handle=txt_handle,
                                                                                  fig_handle=fig))
+
+        plt.show()
+
+    def plot_elevation(self):
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.dists_cl[:-1], self.elevation_profile)
+        ax.set_title("Elevation Profile")
+        ax.set_xlabel("distance along track in m")
+        ax.set_ylabel("elevation of track")
+        plt.grid()
+    
+    def plot_elevation_3d(self):
+        scale_x = 1.0
+        scale_y = 1.0
+        scale_z = 0.3  # scale z axis such that it does not appear stretched
+
+        # create 3d plot
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+
+        # recast get_proj function to use scaling factors for the axes
+        ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([scale_x, scale_y, scale_z, 1.0]))
+
+        # plot raceline and boundaries
+        # ax.plot(refline[:, 0], refline[:, 1], "k--", linewidth=0.7)
+        # ax.plot(bound1_interp[:, 0], bound1_interp[:, 1], 0.0, "k-", linewidth=0.7)
+        # ax.plot(bound2_interp[:, 0], bound2_interp[:, 1], 0.0, "k-", linewidth=0.7)
+        # ax.plot(trajectory[:, 1], trajectory[:, 2], "r-", linewidth=0.7)
+        ax.plot(self.raceline[:, 0], self.raceline[:, 1], 0.0, "k-", linewidth=0.7)
+
+        ax.grid()
+        ax.set_aspect("auto")
+        ax.set_xlabel("east in m")
+        ax.set_ylabel("north in m")
+
+        # plot velocity profile in 3D
+        ax.plot(self.raceline[:, 0], self.raceline[:, 1], self.elevation_profile[:], color="k")
+        ax.set_zlabel("elevation in m")
+
+        cur_ind = 0
+        no_points_traj_vdc = len(self.raceline[0])
+
+        while cur_ind < no_points_traj_vdc - 1:
+            x_tmp = [self.raceline[cur_ind, 0], self.raceline[cur_ind, 0]]
+            y_tmp = [self.raceline[cur_ind, 1], self.raceline[cur_ind, 1]]
+            z_tmp = [0.0, self.elevation_profile[cur_ind]]  # plot line with height depending on elevation
+
+            # get proper color for line depending on acceleration
+            if self.elevation_profile[cur_ind + 1] - self.elevation_profile[cur_ind] > 0.0:
+                col = "g"
+            elif self.elevation_profile[cur_ind + 1] - self.elevation_profile[cur_ind] < 0.0:
+                col = "r"
+            else:
+                col = "gray"
+
+            # plot line
+            ax.plot(x_tmp, y_tmp, z_tmp, color=col)
+
+            # increment index
+            cur_ind += 1
 
         plt.show()
 

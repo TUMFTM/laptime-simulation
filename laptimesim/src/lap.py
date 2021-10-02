@@ -446,7 +446,10 @@ class Lap(object):
                 
                 # account for available force due to change in elevation
                 if self.trackobj.pars_track["use_elevation"]:
-                    elevation_change = self.trackobj.elevationprofile[i + 1] - self.trackobj.elevationprofile[i]
+                    if i == len(self.trackobj.elevation_profile) - 1:
+                        elevation_change = self.trackobj.elevation_profile[0] - self.trackobj.elevation_profile[i]
+                    else:
+                        elevation_change = self.trackobj.elevation_profile[i + 1] - self.trackobj.elevation_profile[i]
                     elevation_energy = (
                         elevation_change * 
                         self.driverobj.carobj.pars_general["m"] *
@@ -455,14 +458,20 @@ class Lap(object):
 
                     f_x_powert = f_x_powert - elevation_energy / self.trackobj.stepsize
 
+
                 # calculate reached longitudinal acceleration
                 a_x = ((f_x_powert - self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=self.trackobj.drs[i])
                        - self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[i]))))
                        / self.driverobj.carobj.pars_general["m"])
 
                 # calculate velocity in the next point
-                self.vel_cl[i + 1] = math.sqrt(math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize)
-
+                try:
+                    self.vel_cl[i + 1] = math.sqrt(math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize)
+                except ValueError as v:
+                    result = math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize
+                    print("velocity: {}, a_x: {}, step_size: {}, result: {}"
+                        .format(self.vel_cl[i], a_x, self.trackobj.stepsize, result))
+                    raise(v)
                 # consider velocity limit if reaching it during this step
                 """This if statement is intended to prevent unnecessary backward loops. Therefore it should only come
                 into operation if the velocity limit is reached from below (i.e. with acceleration) during the current
@@ -632,14 +641,17 @@ class Lap(object):
                         
                         # calculate the energy change due to elevation change
                         if self.trackobj.pars_track["use_elevation"]:
-                            elevation_change = self.trackobj.elevationprofile[i - j - 1 + 1] - self.trackobj.elevationprofile[i - j - 1]
+                            elevation_change = self.trackobj.elevation_profile[i - j - 1 + 1] \
+                                             - self.trackobj.elevation_profile[i - j - 1]
                             elevation_energy = (
                                 elevation_change * 
                                 self.driverobj.carobj.pars_general["m"] *
                                 self.driverobj.carobj.pars_general["g"]
                             )
 
-                            f_x_poss = f_x_poss - elevation_energy / self.trackobj.stepsize
+                            # + sign because the f_x_poss is positive for deceleration
+                            # and positive elevation change will also decelerate the vehicle
+                            f_x_poss = f_x_poss + elevation_energy / self.trackobj.stepsize
 
                         # calculate deceleration
                         a_x = (-(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
@@ -694,6 +706,7 @@ class Lap(object):
                         drs_tmp = self.trackobj.drs[k]
                     else:
                         drs_tmp = False
+                    
 
                     f_x_resi = (self.driverobj.carobj.air_res(vel=self.vel_cl[k], drs=drs_tmp)
                                 + self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[k]))))
@@ -704,17 +717,17 @@ class Lap(object):
                     f_x_requ = self.driverobj.carobj.pars_general["m"] * a_x_requ
                     
                     # calculate force that must be provided by the powertrain (or brakes) to reach this acc. force
-                    f_x_powert = f_x_requ + f_x_resi
+                    f_x_powert = f_x_requ + f_x_resi 
                     
                     if self.trackobj.pars_track["use_elevation"]:
-                        elevation_change = self.trackobj.elevationprofile[k + 1] - self.trackobj.elevationprofile[k]
+                        elevation_change = self.trackobj.elevation_profile[k + 1] - self.trackobj.elevation_profile[k]
                         elevation_energy = (
                             elevation_change * 
                             self.driverobj.carobj.pars_general["m"] *
                             self.driverobj.carobj.pars_general["g"]
                         )
 
-                        f_x_powert = f_x_powert - elevation_energy / self.trackobj.stepsize
+                        f_x_powert = f_x_powert + elevation_energy / self.trackobj.stepsize
 
                     # check for the two cases "engine demanded" and "engine not demanded"
                     if f_x_powert > 0.0:

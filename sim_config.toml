@@ -76,7 +76,7 @@
     initial_energy = 0  # must always be zero for race_sim calculations to be correct!
     em_strategy = "FCFB"  # Must be FCFB
     use_recuperation = true
-    use_lift_coast = true
+    use_lift_coast = false
     lift_coast_dist = 10.0
     disable_braking = true
 

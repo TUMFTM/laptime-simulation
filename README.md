@@ -16,6 +16,9 @@ Steps to make the simulation go:
 
 1. Set arguments in `sim_config.toml`
    1. Pay attention to the track selected `track_opts_.trackname`
+      1. If you want to use elevation then:
+         1. Set `track_opts_.use_elevation` to `true`
+         2. Make sure the track file has z points in the 3rd column for every x, y
    2. If you're feeling sassy set some `driver_opts_`.
    3. Set the race weekend schedule: `race_characteristics_.gwc_times` -> this will eventually be associated with each track in the series.
    4. Leave `sa_opts_.use_sa`
