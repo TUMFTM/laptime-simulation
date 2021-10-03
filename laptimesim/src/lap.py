@@ -199,7 +199,7 @@ class Lap(object):
         self.e_rec_e_motor_max = np.inf
 
         # elemons add ons:
-        self.e_motor_power = np.zeros(trackobj.no_points)
+        self.e_motor_power = np.zeros(self.trackobj.no_points)
 
     def simulate_lap(self):
         """
@@ -786,6 +786,10 @@ class Lap(object):
                                 * self.driverobj.carobj.pars_engine["eta_e_motor_re"]
                             ) 
                             # get actual motor power and torque from the energy recuperated
+                            # this needs to be back calculated this way instead of using the motor torque and
+                            # rpm because we are using the energy regenerated as the actual motor condition
+                            # then calculating power from energy and torque from power. Is this the best way
+                            # to do that??
                             self.e_motor_power[k] = - self.e_rec_e_motor[k] / (self.t_cl[k + 1] - self.t_cl[k])
                             
                             self.m_e_motor[k] = (self.e_motor_power[k] 
@@ -854,6 +858,28 @@ class Lap(object):
         plt.legend(["combustion engine", "electric motor", "powertrain total", "requested"])
         plt.grid()
         plt.show()
+
+    def plot_power(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.trackobj.dists_cl[:-1], self.e_motor_power)
+        ax.set_title("Motor Power")
+        ax.set_xlabel("distance s in m")
+        ax.set_ylabel("Power in Watts")
+        plt.grid()
+        plt.show()
+
+    def plot_throttle(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.trackobj.dists_cl[:-1], self.driverobj.throttle_pos)
+        ax.set_title("Throttle Position")
+        ax.set_xlabel("distance s in m")
+        ax.set_ylabel("Throttle position (0-1)")
+        plt.grid()
+        plt.show()
+    
+    
 
     def plot_tire_loads(self):
         f_z_stat_avg = 0.25 * self.driverobj.carobj.pars_general["m"] * self.driverobj.carobj.pars_general["g"]

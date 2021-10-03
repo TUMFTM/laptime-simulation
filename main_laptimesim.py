@@ -169,6 +169,9 @@ def main(track_opts: dict,
             # plot aero forces
             lap.plot_aero_forces()
 
+            #plot power
+            lap.plot_power()
+            lap.plot_throttle()
             # plot engine speed and gear selection
             lap.plot_enginespeed_gears()
     if not sa_opts["use_sa"]:

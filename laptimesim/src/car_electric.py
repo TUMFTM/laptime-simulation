@@ -61,7 +61,7 @@ class CarElectric(Car):
     def torque_e_motor(self, n: float) -> float:
         """Rev input in 1/s. Output is the maximum torque in Nm."""
 
-        torque_tmp = self.pars_engine["pow_e_motor"] / (2 * math.pi * n)
+        torque_tmp = self.pars_engine["pow_e_motor"] * self.pars_engine["eta_e_motor"] / (2 * math.pi * n) 
 
         if torque_tmp > self.pars_engine["torque_e_motor_max"]:
             torque_tmp = self.pars_engine["torque_e_motor_max"]
@@ -94,13 +94,13 @@ class CarElectric(Car):
         # get torque potential of e motor
         e_motor_torque_max = self.torque_e_motor(n=n)
 
-        if m_requ <= e_motor_torque_max and es > 0.0:
+        if m_requ <= e_motor_torque_max:
             m_e_motor = throttle_pos * m_requ
-        elif es > 0.0:
-            m_e_motor = throttle_pos * e_motor_torque_max
         else:
-            m_e_motor = 5.0  # set minimum torque such that the lap can be finished
+            m_e_motor = throttle_pos * e_motor_torque_max
 
+
+        # first return is engine motor torque, which is 0 (b/c no combustion engine, its electric)
         return 0.0, m_e_motor
 
     def calc_torque_distr_f_x(self, f_x: float, n: float, throttle_pos: float, es: float, vel: float,
