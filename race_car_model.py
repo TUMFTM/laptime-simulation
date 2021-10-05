@@ -43,6 +43,55 @@ class RaceCarModel():
         self._is_allowable_weight = False
 
         self._race_car_properties = {}
+        
+        # Independent Variables
+        self._battery_size = -1
+        self._motor_max_torque = -1
+        self._gross_vehicle_weight = -1
+        self._weight_reduction = -1
+        self._coefficient_of_drag = -1
+        self._battery_change_constant = -1
+        self._powertrain_type = "electric"  # always electric
+        self._front_axle_center_of_gravity_distance = -1
+        self._rear_axle_center_of_gravity_distance = -1
+        self._height_center_of_gravity = -1
+        self._track_width_front = -1
+        self._track_width_rear = -1
+        self._front_wing_downforce_constant = -1
+        self._front_wing_area = -1
+        self._rear_wing_downforce_constant = -1
+        self._vehicle_topology = ""
+        self._motor_output_efficiency = -1
+        self._motor_regeneration_efficiency = -1
+        self._
+        
+
+        # Relationship Variables
+        self._battery_power_output_factor = -1
+        self._motor_torque_density = -1
+        self._battery_energy_density = -1
+        self._battery_mass_pit_factor = -1
+        self._motor_constant = -1
+        self._max_vehicle_ratio = -1
+        self._car_density = -1
+        self._chassis_battery_mass_factor = -1
+        self._chassis_motor_mass_fact0r = -1 
+        self._rolling_resistance_mass_factor = -1
+      
+
+        # Depdendent Variables
+        self._battery_mass = -1
+        self._pit_time = -1
+        self._motor_mass = -1
+        self._motor_max_power = -1
+        self._net_chassis_mass = -1
+        self._total_vehicle_mass = -1
+        self._maximum_allowable_vehicle_mass = -1
+        self._frontal_area = -1
+        self._c_w_a = -1
+        self._rolling_resistance = -1
+        
+
 
     def set_inputs(self,
                    battery_size,
