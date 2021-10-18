@@ -11,56 +11,9 @@
 # https://docs.google.com/document/d/1X2Aovz6VcKqkIUcsu5Z-QPbyDjBc7IG8CdWpZJr58eI/edit#
 
 
-# INDEPENDENT VARIABLES
-# Independent Variables can either be a single float value or a 
-# list of 3 float values which represent a range of values to iterate over
-# format [min_value, max_value, number_of_steps]
-
-# battery_size:             battery size in kWh
-# battery_change_constant:  constant time penalty for changing battery in minutes
-# motor_max_torque:         maximum continuous motor torque in Nm
-# gross_vehicle_weight:     vehicle weight from factory in kg
-# weight_reduction:         weight reduced from removing unnecessary car components in kg
-# coefficient_of_drag:      coefficient of drag of car (unitless)
-
-# RELATIONSHIP VARIABLES
-# Relationship variables must be a single float value and represent
-# relationships between different car properties
-# battery_mass_pit_factor:          how long to pit per kg of battery (minutes/kg)
-# battery_energy_density:           energy density of battery kWh/kg
-# motor_constant:                   motor constant of motor Nm/sqrt(W)
-# motor_torque_density:             torque per kilogram of motor (Nm/kg)
-# max_vehicle_weight_ratio:         rules based maximum weight of vehicle based on gvw (unitless)
-# car_density:                      density of car (kg/m^3)
-# chassis_battery_mass_factor:      ratio of supporting chassis mass per battery mass (kg/kg)
-# chassis_motor_mass_factor:        ratio of supporting chassis mass per motor mass (kg/kg)
-# rolling_resistance_mass_factor:   ratio of rolling resistance increase per kg of total vehicle mass (1/kg)
-
-[car_properties_]
-    [car_properties_.independent_variables]
-        battery_size = [10.0, 100.0, 10.0]  # kWh
-        battery_change_constant = 3  # minutes
-        motor_max_torque = [100.0, 300.0, 3.0]  # Nm
-        gross_vehicle_weight = 1200  # kg
-        weight_reduction = 200  # kg
-        coefficient_of_drag = 0.3  # unitless
-    
-    [car_properties_.relationship_variables]
-        battery_energy_density = 0.5  # kWh/kg
-        battery_mass_pit_factor = 0.03  # 15 minutes for 500kg battery
-        battery_power_output_factor = 1000 # Watts output per kWh battery capacity
-        motor_constant = 0.9  # Nm/sqrt(W)
-        motor_torque_density = 5 # Nm/kg
-        max_vehicle_weight_ratio = 1.25  # determined by rules
-        car_density = 100 # kg/m^3
-        chassis_battery_mass_factor = 0.05 # kg chassis per kg battery
-        chassis_motor_mass_factor = 0.05 # kg chassis per kg motor
-        rolling_resistance_mass_factor = 0.00001 #0.01 rolling resistance for 1000 kg car
-    
 # vehicle parameters ----------------------------------------------------------------------------------------------------------------------
 # Initial vehicle parameters to set, the data structure is what the simulation came with
 # and is copied direcly from the FE_Berlin.ini file
-# [VEH_PARS]
 
 # powertrain_type:              electric, hybrid, combustion
 
@@ -69,20 +22,38 @@
 # h_cog:                        [m] height of center of gravity
 # sf:                           [m] track width front
 # sr:                           [m] track width rear
-# m:                            [kg] vehicle mass inlcuding driver excluding fuel (FE minimum 880kg)
-# f_roll:                       [-] rolling resistance coefficient
-# c_w_a:                        [m^2] c_w * A_car -> air resistance calculation
+# m: NOT USED                           [kg] vehicle mass inlcuding driver excluding fuel (FE minimum 880kg)
+# f_roll:  NOT USED                     [-] rolling resistance coefficient
+# c_w_a:   NOT USED                     [m^2] c_w * A_car -> air resistance calculation
 # c_z_a_f:                      [m^2] c_z_f * A_frontwing
 # c_z_a_r:                      [m^2] c_z_r * A_rearwing
 # g:                            [m/s^2]
 # rho_air:                      [kg/m^3] air density
 # drs_factor:                   [-] part of reduction of air resistance by DRS
+# coefficient_of_drag           [-] coefficient of drag
+# vehicle_curb_mass             [kg] vehicle curb mass according to manufacturer
+# mass_reduction                [kg] mass removed to make it a racecar! 
+# chassis_motor_mass_factor     [kg/kg] mass added to chassis to support the motor mass
+# chassis_battery_mass_factor   [kg/kg] mass added to chassis to support the battery mass
+# car_density                   [kg/m^3] vehicle density, used to calculate frontal area
+# max_vehicle_weight_ratio      [-] maximum vehicle weight ratio allowed by rules 
+# rolling_resistance_mass_factor [1/kg] rolling resistance scaling with vehicle mass
+
+
+# battery_size:                 [kWh] battery size
+# battery_energy_density        [kWh/kg] energy storage per mass
+# battery_change_constant       [minutes] constant time penalty for replacing battery
+# battery_mass_pit_factor       [minutes/kg] time added to pit time per kg of battery mass
+# battery_power_output_factor   [W/kWh] maximum power output of battery per kWh of storage
 
 # topology:                     [-] RWD or AWD or FWD
-# pow_e_motor:                  [W] total electric motor power (after efficiency losses)
+# pow_e_motor:  NOT USED                [W] total electric motor power (after efficiency losses)
 # eta_e_motor:                  [-] efficiency electric motor (drive)
 # eta_e_motor_re:               [-] efficiency electric motor (recuperation)
-# torque_e_motor_max:           [Nm] maximum torque of electric motor (after efficiency losses)
+# torque_e_motor_max:   VARIABLE RENAMED        [Nm] maximum torque of electric motor (after efficiency losses)
+# motor_max_torque              [Nm] maximum torque delivered at output shaft of motor
+# motor_constant                [Nm/sqrt(W)] motor constant
+# motor_torque_density          [Nm/kg] Amount of torque supplied per kg of motor mass
 
 # keep attention on the direction of the values, i.e. i_trans is from tire to engine!
 # i_trans:                      [-] gear ratio
@@ -99,47 +70,83 @@
 # dmuy_dfz:                     [-] reduction of force potential with rising tire load (fz > fz_0) -> negative value!
 # tire_model_exp:               [-] exponent used in the tire model to adjust shape of friction "circle" -> [1.0, 2.0]
 
-[veh_pars_]
-    powertrain_type = "electric"
-    
-    [veh_pars_.general]
-        lf = 1.906
-        lr = 1.194
-        h_cog = 0.345
-        sf = 1.3
-        sr = 1.3
-        m = 3000.0
-        f_roll = 0.02
-        c_w_a = 1.15
-        c_z_a_f = 0.1
-        c_z_a_r = 0.1
-        g = 9.81
-        rho_air = 1.18
-        drs_factor = 0.0
-    [veh_pars_.engine]
-        topology = "RWD"
-        pow_e_motor = 100e3
-        eta_e_motor = 0.9
-        eta_e_motor_re = 0.9
-        torque_e_motor_max = 100.0
-    [veh_pars_.gearbox]
-        i_trans = [0.056, 0.091]
-        n_shift = [19000.0, 19000.0]
-        e_i = [1.04, 1.04]
-        eta_g = 0.96
-    [veh_pars_.tires]
-        tire_model_exp = 2.0
-        [veh_pars_.tires.f]
-            circ_ref = 2.168
-            fz_0 = 2500.0
-            mux = 1.22
-            muy = 1.22
-            dmux_dfz = -2.5e-5
-            dmuy_dfz = -2.5e-5
-        [veh_pars_.tires.r]
-            circ_ref = 2.168
-            fz_0 = 2500.0
-            mux = 1.42
-            muy = 1.42
-            dmux_dfz = -2.0e-5
-            dmuy_dfz = -2.0e-5
+# Notes about the parameters:
+# - Any paramater can be either a single value or a range of values except a few params listed below
+# - If you want the paramater to be a range of values then it should take the form:
+#     [min_value, max_value, number_of_steps] 
+#     all values must be doubles (add a ".0" after any whole number) this is to work with the python toml library
+#     the number_of_steps must be a whole number > 1, ex: 3.0, 9.0
+#     examples: [12.34, 25.0, 6.0] or [0.0003, 0.0004, 55.0]
+# - exceptions, these parameters must not take this form:
+#     these I decided would be too complex to have a range of values for now and the 
+#     simulation doesn't support it
+#     - "powertrain_type" must be a string
+#     - "engine.topology" must be a string 
+#     - "gearbox.i_trans" must be a list and represents the gear ratios for the transmission, only one set of 
+#         gear ratios are allowed in the config at a time
+#     - "gearbox.n_shift" must a list same lenght of "gearbosx.i_trans"
+#        same rational as "gearbox.i_trans"
+#     - "gearbox.e_i" same as "gearbox.i_trans" and "gearbox.n_shift"
+# !! Do keep in mind that every combination of paramaters through all ranges
+# will be executed so the number of iterations can quickly be very high!!
+
+powertrain_type = "electric"
+
+[general]
+    lf = 1.906
+    lr = 1.194
+    h_cog = 0.345
+    sf = 1.3
+    sr = 1.3
+    # m = 3000.0  # determined by other variables
+    # f_roll = 0.02 # determined by mass and rolling resistance factor
+    # c_w_a = 1.15  # determined by frontal area and coefficient of drag
+    c_z_a_f = 0.1
+    c_z_a_r = 0.1
+    g = 9.81
+    rho_air = 1.18
+    drs_factor = 0.0
+    coefficient_of_drag = 0.3  # unitless
+    vehicle_curb_mass = 1200  # kg
+    mass_reduction = 200  # kg
+    chassis_motor_mass_factor = 0.05 # kg chassis per kg motor
+    chassis_battery_mass_factor = 0.05 # kg chassis per kg battery
+    car_density = 100 # kg/m^3
+    max_vehicle_weight_ratio = 1.25  # determined by rules
+    rolling_resistance_mass_factor = 0.00001 #0.01 rolling resistance for 1000 kg car
+[battery]
+    size = [10.0, 100.0, 10.0]  # kWh
+    energy_density = 0.5  # kWh/kg
+    change_constant = 3  # minutes
+    mass_pit_factor = 0.03  # minutes per kg of battery of pit time
+    power_output_factor = 1000 # Watts output per kWh battery capacity
+[engine]
+    topology = "RWD"
+    # pow_e_motor = 100e3  # determined by motor constant and torque
+    eta_e_motor = 0.9
+    eta_e_motor_re = 0.9
+    # torque_e_motor_max = 100.0  # new variable name
+    motor_max_torque = [100.0, 300.0, 3.0]  # Nm
+    motor_constant = 0.9  # Nm/sqrt(W)
+    motor_torque_density = 5 # Nm/kg
+[gearbox]
+    i_trans = [0.056, 0.091]
+    n_shift = [19000.0, 19000.0]
+    e_i = [1.04, 1.04]
+    eta_g = 0.96
+[tires]
+    tire_model_exp = 2.0
+    [tires.f]
+        circ_ref = 2.168
+        fz_0 = 2500.0
+        mux = 1.22
+        muy = 1.22
+        dmux_dfz = -2.5e-5
+        dmuy_dfz = -2.5e-5
+    [tires.r]
+        circ_ref = 2.168
+        fz_0 = 2500.0
+        mux = 1.42
+        muy = 1.42
+        dmux_dfz = -2.0e-5
+        dmuy_dfz = -2.0e-5

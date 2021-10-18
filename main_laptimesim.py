@@ -36,7 +36,7 @@ def main(track_opts: dict,
          driver_opts: dict,
          sa_opts: dict,
          debug_opts: dict,
-         car_properties: dict,
+         car_config: dict,
          veh_pars: dict,
          track_pars: dict,) -> laptimesim.src.lap.Lap:
 
@@ -76,6 +76,19 @@ def main(track_opts: dict,
     if debug_opts["use_plot_comparison_tph"]:
         output_path_veh_dyn_info = os.path.join(output_path, "veh_dyn_info")
         os.makedirs(output_path_veh_dyn_info, exist_ok=True)
+    
+
+    date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
+    datastore = DataStore(results_file_name=resultsfile,
+                            track_pars=track_pars,
+                            car_name=veh_pars[VEHICLE_TAG])
+
+    datastore.parse_car_config(car_config)
+
+    datastore.generate_unique_sa_combinations()
+
+    first_iter_veh_pars = datastore.single_iteration_data[0].race_car_model.get_car_parameters_for_laptimesim()
 
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
@@ -123,7 +136,7 @@ def main(track_opts: dict,
     # ------------------------------------------------------------------------------------------------------------------
     # CREATE CAR INSTANCE ----------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
-    car = laptimesim.src.car_electric.CarElectric(pars=veh_pars)
+    car = laptimesim.src.car_electric.CarElectric(pars=first_iter_veh_pars)
 
     # debug plot
     if debug_opts["use_debug_plots"]:
@@ -186,45 +199,30 @@ def main(track_opts: dict,
 
     else:
 
-        # output file 
-        date = datetime.datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-        resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
-        datastore = DataStore(results_file_name=resultsfile,
-                              track_pars=track_pars,
-                              car_name=veh_pars[VEHICLE_TAG])
-
         # sensitivity analysis -----------------------------------------------------------------------------------------
-
-        # turn debug messages off
-        lap.pars_solver["print_debug"] = False
-
-        datastore.parse_car_properties(car_properties)
-
-        datastore.generate_unique_sa_combinations()
 
         for i, single_simulation_data in datastore.single_iteration_data.items():
             print("SA: Starting solver run (%i)" % (i + 1))
 
-            current_lap_car_variables = single_simulation_data.race_car_model.get_vehicle_properties()
+            race_car_object = single_simulation_data.race_car_model
+
+            veh_pars = race_car_object.get_car_parameters_for_laptimesim()
+            car = laptimesim.src.car_electric.CarElectric(pars=veh_pars)
 
             # change properties of vehicle in the lap simulation
-            lap.driverobj.carobj.pars_general["m"] = current_lap_car_variables[TOTAL_VEHICLE_MASS_TAG]
-            lap.driverobj.carobj.pars_general["c_w_a"] = current_lap_car_variables[C_W_A_TAG]
-            lap.driverobj.carobj.pars_engine["torque_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
-            lap.driverobj.carobj.pars_general["f_roll"] = current_lap_car_variables[ROLLING_RESISTANCE_TAG]
-            lap.driverobj.carobj.pars_engine["pow_e_motor_max"] = current_lap_car_variables[MOTOR_MAX_TORQUE_TAG]
-            lap.driverobj.carobj.calculate_static_parameters()
+            lap.driverobj.carobj = car
+
 
             # simulate lap and save lap time
             lap.simulate_lap()
 
-            total_pit_time = current_lap_car_variables[PIT_TIME_TAG] + track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
+            total_pit_time = race_car_object.general_parameters.pit_time + track_pars[PIT_DRIVE_THROUGH_PENALTY_TIME]
 
             race_sim = RaceSim(pit_time=total_pit_time,
                                 gwc_times=datastore.track_pars[GWC_TIMES_TAG],
                                 lap_time=lap.t_cl[-1],
                                 energy_per_lap=lap.e_cons_cl[-1],
-                                battery_capacity=current_lap_car_variables[BATTERY_SIZE_TAG])
+                                battery_capacity=race_car_object.battery_parameters.size)
             race_sim.calculate()
 
             total_pits = 0
@@ -289,32 +287,6 @@ if __name__ == '__main__':
     sa_opts_ = config["sa_opts_"]
     debug_opts_ = config["debug_opts_"]
 
-    # see the car_config for variable details
-    car_properties_ = car_config["car_properties_"]
-    veh_pars_ = car_config["veh_pars_"]
-    veh_pars_[VEHICLE_TAG] = car_name
-
-    # Remap characteristics to the tag constants that are used throughout
-    # the simulation
-    car_properties = {}
-    car_properties[BATTERY_SIZE_TAG] = car_properties_["independent_variables"]["battery_size"]
-    car_properties[MOTOR_MAX_TORQUE_TAG] = car_properties_["independent_variables"]["motor_max_torque"]
-    car_properties[GROSS_VEHICLE_WEIGHT_TAG] = car_properties_["independent_variables"]["gross_vehicle_weight"]
-    car_properties[WEIGHT_REDUCTION_TAG] = car_properties_["independent_variables"]["weight_reduction"]
-    car_properties[COEFFICIENT_OF_DRAG_TAG] = car_properties_["independent_variables"]["coefficient_of_drag"]
-
-    car_properties[BATTERY_ENERGY_DENSITY_TAG] = car_properties_["relationship_variables"]["battery_energy_density"]
-    car_properties[BATTERY_MASS_PIT_FACTOR_TAG] = car_properties_["relationship_variables"]["battery_mass_pit_factor"]
-    car_properties[BATTERY_POWER_OUTPUT_FACT0R_TAG] = car_properties_["relationship_variables"]["battery_power_output_factor"]
-    car_properties[MOTOR_CONSTANT_TAG] = car_properties_["relationship_variables"]["motor_constant"]
-    car_properties[MOTOR_TORQUE_DENSITY_TAG] = car_properties_["relationship_variables"]["motor_torque_density"]
-    car_properties[MAX_VEHICLE_WEIGHT_RATIO_TAG] = car_properties_["relationship_variables"]["max_vehicle_weight_ratio"]
-    car_properties[CAR_DENSITY_TAG] = car_properties_["relationship_variables"]["car_density"]
-    car_properties[CHASSIS_BATTERY_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_battery_mass_factor"]
-    car_properties[CHASSIS_MOTOR_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["chassis_motor_mass_factor"]
-    car_properties[ROLLING_RESISTANCE_MASS_FACTOR_TAG] = car_properties_["relationship_variables"]["rolling_resistance_mass_factor"]
-    car_properties[BATTERY_CHANGE_CONSTANT_TAG] = car_properties_["independent_variables"]["battery_change_constant"]
-
     # get track parameters
     track_pars_ = track_config[track_opts_["trackname"]]
     track_pars_[WINNING_GAS_CAR_LAPS] = track_pars_["winning_laps"]
@@ -330,6 +302,5 @@ if __name__ == '__main__':
          driver_opts=driver_opts_,
          sa_opts=sa_opts_,
          debug_opts=debug_opts_,
-         car_properties=car_properties,
-         veh_pars=veh_pars_,
+         car_config=car_config,
          track_pars=track_pars_)

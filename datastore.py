@@ -17,10 +17,20 @@ from definitions import (
     VEHICLE_TAG, TOTAL_LAPS_TAG, LAPTIME_TAG,
     LAP_ENERGY_TAG, ENERGY_REMAINING_TAG,
 
-    REQUIRED_INPUTS, HEADER_ROW,
-    INPUT_VARIABLES, RELATIONSHIP_VARIABLES, WINNING_ELECTRIC_CAR_TAG, WINNING_GAS_CAR_LAPS
+    HEADER_ROW, WINNING_ELECTRIC_CAR_TAG, WINNING_GAS_CAR_LAPS
 )
 
+# Config keys that cannot be multiple values
+# through the simulation, these can only be one
+# value per simulation run because they are more not
+# single number data types, they are strings or lists
+EXCEPTION_KEYS = [
+    "powertrain_type",
+    "engine.topology",
+    "gearbox.i_trans",
+    "gearbox.n_shift",
+    "gearbox.e_i",
+]
 
 
 class SingleIterationData():
@@ -118,75 +128,13 @@ class DataStore():
         self.input_data_ranges = {}
         self.single_iteration_data = {}
         self._total_iterations = -1
-        
-
-    def add_static_input_variables(self, input_variables):
-        """Function for adding in simulation variables that does not
-        vary through each iteration. For each variable passed in it:
-            - validates that it is a valid variable name (must be in REQUIRED_INPUT list)
-            - adds an entry to the input_data_ranges dict that has the same format as variables
-            that will change to make generating all unique combinations of variables easier later
-
-        Inputs:
-            - input_variables (dict): 
-                - key: name of variable being added
-                - value: value of the variable of name key in the simulation
-        
-        Outputs:
-            - none
-        
-        Raises:
-            - Exception on invalid data names being passed in
-        
-        """
-        for key, value in input_variables.items():
-            if key not in REQUIRED_INPUTS:
-                raise("invalid key passed in")
-            # create a "sa_range" list like other variables that
-            # will only generate 1 value after calling a numpy.linspace on it
-            self.input_data_ranges[key] = [value,
-                                           value,
-                                           1]
     
-    def add_sa_input_variables(self, sa_opts_ranges):
-        """Function for adding in simulation variables that do
-        vary through each iteration. For each variable passed in it:
-            - validates that it is a valid variable name (must be in REQUIRED_INPUT list)
-            - validates that each value 
-            - adds an entry to the input_data_ranges dict
-
-        Inputs:
-            - sa_opts_ranges (dict): dict of variables to iterate over.
-            Must be at least 1 variable, can be any number of supported variables.
-            Key is name of variable, value is list of 3 elements: 
-            [min_value, max_value, number_of_steps]. This is the same as laid out
-            in the sa_opts part of the optimization file
-                This is the same format as laid out in the sim_config.toml
-        
-        Outputs:
-            - none
-        
-        Raises:
-            - Exception on invalid data names being passed in
-        
-        """
-        print(sa_opts_ranges)
-        for key, value in sa_opts_ranges.items():
-            if key not in REQUIRED_INPUTS:
-                raise("invalid key passed in")
-            if len(value) != 3:
-                raise("Invalid length list")
-            # create a "sa_range" list like other variables that
-            # will only generate 1 value after calling a numpy.linspace on it
-            self.input_data_ranges[key] = value
-    
-    def parse_car_properties(self, car_properties):
+    def parse_car_config(self, car_config):
         """Function to parse the car properties dictionary
         from the config. 
 
         Inputs:
-            - car_properties (dict): dictionary of car properties from config
-                that has static and ranges of variables
+            - car_config (dict): dictionary of car properties, raw from config file
         
         Outputs: 
             None
@@ -195,28 +143,32 @@ class DataStore():
             Nothing
         
         """
+
+        # flatten dictionary. all keys are assumed to be the form: "section.parameter"
+        # ex: general.lf or gearbox.n_shift
+        flattened_car_config = car_config.flatten()
  
         # iterate over list passed in
-        for key in car_properties:
-
-            # data passed in must be in the predefined list of
-            # keys
-            if key not in REQUIRED_INPUTS:
-                raise(Exception("invalid key passed in {}".format(key)))
+        for key in flattened_car_config:
+            if key in EXCEPTION_KEYS:
+                # make a list
+                self.input_data_ranges[key] = flattened_car_config[key]
+                make sure this should be pass not continue
+                pass
 
             # check type of the value, if its not a list its assumed
             # to be a single value and is then made into a list
             # that is in the same format as the varying lists
-            if type(car_properties[key]) is not list:
-                self.input_data_ranges[key] = [float(car_properties[key]),
-                                               float(car_properties[key]),
+            if type(flattened_car_config[key]) is not list:
+                self.input_data_ranges[key] = [float(flattened_car_config[key]),
+                                               float(flattened_car_config[key]),
                                                1]
             # type is a list, just add to list
             else:
                 # change type at index 2 for linspace operation later
                 # in generate_unique_sa_combinations
-                car_properties[key][2] = int(car_properties[key][2])
-                self.input_data_ranges[key] = car_properties[key]
+                flattened_car_config[key][2] = int(flattened_car_config[key][2])
+                self.input_data_ranges[key] = flattened_car_config[key]
         
     def generate_unique_sa_combinations(self):
         """ Function that generates all unique combinations of 
@@ -236,13 +188,6 @@ class DataStore():
 
         """
 
-        # validate keys all keys are present before creating unique combinations
-        for key in REQUIRED_INPUTS:
-            if key not in self.input_data_ranges.keys():
-                raise(
-                    Exception("incorrect variables present in input data ranges, {} not present".format(key))
-                )
-        
         # turn iteration variables into a list of unique 
         # simulation conditions to iterate through
         # 1. List all unique values for each sensitivity analysis (sa) variable
@@ -256,10 +201,14 @@ class DataStore():
         # 1
         sa_opts_explicit_values = []
         sa_opts_names = []
-        for key, sa_range in self.input_data_ranges.items():
-            entry_explicit_values = np.linspace(sa_range[0],
-                                                sa_range[1],
-                                                sa_range[2])
+        for key, value in self.input_data_ranges.items():
+            if key in EXCEPTION_KEYS:
+                # value is no a list, make a 1 entry list
+                entry_explicit_values = [value]
+            else:
+                entry_explicit_values = np.linspace(value[0],
+                                                    value[1],
+                                                    value[2])
             sa_opts_names.append(key)
             sa_opts_explicit_values.append(entry_explicit_values)
 
@@ -295,16 +244,7 @@ class DataStore():
             # Make racecar property model and calculate parameters
             race_car_model = RaceCarModel()
 
-            racecar_input_vars = {}
-            for key in INPUT_VARIABLES:
-                racecar_input_vars[key] = input_vars[key]
-            race_car_model.set_inputs_dict(racecar_input_vars)
-
-            racecar_relationship_vars = {}
-            for key in RELATIONSHIP_VARIABLES:
-                racecar_relationship_vars[key] = input_vars[key]
-            
-            race_car_model.set_relationship_variables_dict(racecar_relationship_vars)
+            race_car_model.set_params(input_vars)
 
             # Catch condition where the total mass of the vehicle
             # is too high and don't add to the iteration
