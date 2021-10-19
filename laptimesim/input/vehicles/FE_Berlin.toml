@@ -108,20 +108,20 @@
         h_cog = 0.345
         sf = 1.3
         sr = 1.3
-        m = 880.0
+        m = 3000.0
         f_roll = 0.02
         c_w_a = 1.15
-        c_z_a_f = 1.24
-        c_z_a_r = 1.52
+        c_z_a_f = 0.1
+        c_z_a_r = 0.1
         g = 9.81
         rho_air = 1.18
         drs_factor = 0.0
     [veh_pars_.engine]
         topology = "RWD"
-        pow_e_motor = 200e3
+        pow_e_motor = 400e3
         eta_e_motor = 0.9
         eta_e_motor_re = 0.9
-        torque_e_motor_max = 150.0
+        torque_e_motor_max = 400.0
     [veh_pars_.gearbox]
         i_trans = [0.056, 0.091]
         n_shift = [19000.0, 19000.0]

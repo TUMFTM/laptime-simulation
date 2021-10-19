@@ -43,7 +43,8 @@ class Lap(object):
                  "__fuel_cons_cl",
                  "__e_cons_cl",
                  "__tire_loads",
-                 "__e_es_to_e_motor_max")
+                 "__e_es_to_e_motor_max",
+                 "__e_motor_power")
 
     # ------------------------------------------------------------------------------------------------------------------
     # CONSTRUCTOR ------------------------------------------------------------------------------------------------------
@@ -80,6 +81,9 @@ class Lap(object):
         self.fuel_cons_cl = np.zeros(trackobj.no_points_cl)     # [kg] consumed fuel mass until current point
         self.e_cons_cl = np.zeros(trackobj.no_points_cl)        # [J] consumed energy until current point
         self.tire_loads = np.zeros((trackobj.no_points, 4))     # [N] tire loads [FL, FR, RL, RR]
+
+        # elemons add ons:
+        self.e_motor_power = np.zeros(trackobj.no_points)
 
         # [J/lap] maximum amount of energy allowed to recuperate in e motor
         self.e_rec_e_motor_max = np.inf
@@ -165,6 +169,10 @@ class Lap(object):
     def __set_e_es_to_e_motor_max(self, x: float) -> None: self.__e_es_to_e_motor_max = x
     e_es_to_e_motor_max = property(__get_e_es_to_e_motor_max, __set_e_es_to_e_motor_max)
 
+    def __get_e_motor_power(self) -> np.ndarray: return self.__e_motor_power
+    def __set_e_motor_power(self, x: np.ndarray) -> None: self.__e_motor_power = x
+    e_motor_power = property(__get_e_motor_power, __set_e_motor_power)
+
     # ------------------------------------------------------------------------------------------------------------------
     # METHODS (CALCULATIONS) -------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
@@ -189,6 +197,9 @@ class Lap(object):
         self.tire_loads = np.zeros((self.trackobj.no_points, 4))
 
         self.e_rec_e_motor_max = np.inf
+
+        # elemons add ons:
+        self.e_motor_power = np.zeros(self.trackobj.no_points)
 
     def simulate_lap(self):
         """
@@ -488,7 +499,10 @@ class Lap(object):
                 self.es_cl[i + 1] = self.es_cl[i] + e_rec_etc - e_cons_e_motor
 
                 if not self.driverobj.carobj.powertrain_type == "electric" and self.es_cl[i + 1] < 0.0:
-                    self.es_cl[i + 1] = 0.0
+                    self.es_cl[i + 1] = 0.
+                
+                self.e_motor_power[i] = self.driverobj.carobj.power_demand_e_motor_drive(n=self.n_cl[i],
+                                                                                         m_e_motor=self.m_e_motor[i])
 
                 # increment
                 i += 1
@@ -548,19 +562,63 @@ class Lap(object):
                                             a_y=a_y,
                                             mu=self.trackobj.mu[i - j - 1])
 
+                        # flag to only use regen, this is used in the next function
+                        # to determine if the possible deceleration force is calculated
+                        # using all the wheels (as it would in braking) or with only 
+                        # the driven wheels (as in regen)
+                        regen_only = self.driverobj.pars_driver["disable_braking"]
+
+                        # only limit the braking forces on the weak side when braking is
+                        # being used, we can avoid using this because I'm assuming we will
+                        # have a limited slip that can handle putting maximum torque
+                        # to each driven tire
+                        if regen_only: 
+                            limit_braking_weak_side = None
+                        else:
+                            limit_braking_weak_side = self.pars_solver["limit_braking_weak_side"]
+
                         # calculate remaining tire potential for deceleration using all wheels
                         # assumption: potential always usable by proper brake force distribution
                         f_x_poss = self.driverobj.carobj.\
                             calc_f_x_pot(f_x_pot_fl=f_x_pot_fl,
-                                         f_x_pot_fr=f_x_pot_fr,
-                                         f_x_pot_rl=f_x_pot_rl,
-                                         f_x_pot_rr=f_x_pot_rr,
-                                         f_y_pot_f=f_y_pot_fl + f_y_pot_fr,
-                                         f_y_pot_r=f_y_pot_rl + f_y_pot_rr,
-                                         f_y_f=f_y_f,
-                                         f_y_r=f_y_r,
-                                         force_use_all_wheels=True,
-                                         limit_braking_weak_side=self.pars_solver["limit_braking_weak_side"])
+                                        f_x_pot_fr=f_x_pot_fr,
+                                        f_x_pot_rl=f_x_pot_rl,
+                                        f_x_pot_rr=f_x_pot_rr,
+                                        f_y_pot_f=f_y_pot_fl + f_y_pot_fr,
+                                        f_y_pot_r=f_y_pot_rl + f_y_pot_rr,
+                                        f_y_f=f_y_f,
+                                        f_y_r=f_y_r,
+                                        force_use_all_wheels= not regen_only,
+                                        limit_braking_weak_side=limit_braking_weak_side)
+
+                        # the above may still result in an invalid force even if the force_use_all_wheels
+                        # variable is false, we need to do checks on motor torque and motor power to make sure
+                        # the output force of the drivetrain is minimum of the motor torque, motor power, 
+                        # and tire limitations if regen_only is set
+                        if regen_only:
+                            max_motor_torque = self.driverobj.carobj.pars_engine["torque_e_motor_max"]
+                            max_motor_power = self.driverobj.carobj.pars_engine["pow_e_motor"]
+
+                            # calculate the maximum longitudinal force based on max motor torque
+                            # I divided by efficiency in the below equation because we are braking and 
+                            # the efficiency loss of the drivetrain will be ADDED to the output because
+                            # we are slowing down not speeding up
+                            f_x_poss_torque = ( max_motor_torque 
+                                / self.driverobj.carobj.pars_gearbox["eta_g"]
+                                / (self.driverobj.carobj.pars_gearbox["i_trans"][self.gear_cl[i - j - 1]]
+                                * self.driverobj.carobj.r_driven_tire(vel=self.vel_cl[i - j - 1])
+                                * self.driverobj.carobj.pars_gearbox["e_i"][self.gear_cl[i - j - 1]]))
+                            
+                            # calculate the maximum longitudinal force based on max motor power
+                            # same rational as above for dividing by gearbox efficiency instead of multiplying
+                            # power = force * velocity -> force = power / velocity
+                            f_x_poss_power = (max_motor_power 
+                                / self.driverobj.carobj.pars_engine["eta_e_motor_re"]
+                                / self.driverobj.carobj.pars_gearbox["eta_g"]
+                                / vel_tmp)
+
+                            f_x_poss = min(f_x_poss, f_x_poss_torque, f_x_poss_power)
+                        
 
                         # calculate deceleration
                         a_x = (-(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
@@ -627,6 +685,8 @@ class Lap(object):
                     # calculate force that must be provided by the powertrain (or brakes) to reach this acc. force
                     f_x_powert = f_x_requ + f_x_resi
 
+                    # print("f_x_requ: {}, f_x_resi: {}, f_x_powert: {}, step: {}".format(f_x_requ, f_x_resi, f_x_powert, self.trackobj.stepsize))
+
                     # check for the two cases "engine demanded" and "engine not demanded"
                     if f_x_powert > 0.0:
                         """Engine demanded (this is the case if resistances must be overcome or if the car is
@@ -665,6 +725,9 @@ class Lap(object):
                         e_cons_e_motor = (self.driverobj.carobj.power_demand_e_motor_drive(n=self.n_cl[k],
                                                                                            m_e_motor=self.m_e_motor[k])
                                           * (self.t_cl[k + 1] - self.t_cl[k]))
+                        
+                        self.e_motor_power[i] = self.driverobj.carobj.power_demand_e_motor_drive(n=self.n_cl[i],
+                                                                                         m_e_motor=self.m_e_motor[i])
 
                         # calculate changes in the hybrid energy storage [J]
                         self.es_cl[k + 1] = self.es_cl[k] + e_rec_etc - e_cons_e_motor
@@ -676,21 +739,78 @@ class Lap(object):
                         """Engine not demanded -> no powertrain torques required. However, we have to calculate kinetic
                         energy recuperation."""
                         self.m_eng[k] = 0.0
-                        self.m_e_motor[k] = 0.0
                         self.m_requ[k] = 0.0
 
                         # energy recuperation by e motor in [J] under the assumption of e motor being able to recuperate
                         # all kinetic energy remaining after subtraction of the resistances
                         if np.sum(self.e_rec_e_motor) < self.e_rec_e_motor_max \
                                 and self.driverobj.pars_driver["use_recuperation"]:
-                            self.e_rec_e_motor[k] = (self.driverobj.carobj.pars_engine["eta_e_motor_re"]
-                                                     * math.fabs(f_x_powert) * self.trackobj.stepsize)
+
+                            # calculate the energy regenerated as the minimum of the energy recuped by
+                            # calculating from the tire forces, the maximum motor torque, and maximum motor power
+                            # it is possible that the power through the tires exceeds the maximum capability
+                            # of the motors if braking is being used, and the motor can only regen at the 
+                            # capability of the motor
+
+                            # these energy calculations are done "at the tire" that to say: the efficiencies
+                            # are applied to the calculations so that for motor torque and power the equivalent
+                            # energy at the tire is found. This is to have an apples to apples comparison.
+
+                            # then after that calculation is done the actual motor energy stored is recalculated
+
+                            e_rec_e_motor_tires = math.fabs(f_x_powert) * self.trackobj.stepsize
+
+                            max_motor_torque = self.driverobj.carobj.pars_engine["torque_e_motor_max"]
+                            max_motor_power = self.driverobj.carobj.pars_engine["pow_e_motor"] 
+
+                            # get max energy based on torque by dividing by gear ratio and tire diameter
+                            # to get tire force and then multiplying by step size
+                            e_rec_e_motor_torque = (max_motor_torque
+                                / self.driverobj.carobj.pars_gearbox["eta_g"]
+                                / self.driverobj.carobj.pars_gearbox["i_trans"][self.gear_cl[k]] 
+                                / self.driverobj.carobj.r_driven_tire(vel=self.vel_cl[k])
+                                * self.trackobj.stepsize
+                            )
+
+                            # energy = power * time
+                            # TODO: check that efficiencies are applied correctly (and which ones!)
+                            e_rec_e_motor_power = (max_motor_power 
+                                / self.driverobj.carobj.pars_engine["eta_e_motor_re"]
+                                / self.driverobj.carobj.pars_gearbox["eta_g"]
+                                * (self.t_cl[k] - self.t_cl[k - 1])
+                            )
+
+                            e_rec_tmp = min(e_rec_e_motor_tires, e_rec_e_motor_torque, e_rec_e_motor_power)
+                            self.e_rec_e_motor[k] = (e_rec_tmp
+                                * self.driverobj.carobj.pars_gearbox["eta_g"]
+                                * self.driverobj.carobj.pars_engine["eta_e_motor_re"]
+                            ) 
+                            # get actual motor power and torque from the energy recuperated
+                            # this needs to be back calculated this way instead of using the motor torque and
+                            # rpm because we are using the energy regenerated as the actual motor condition
+                            # then calculating power from energy and torque from power. Is this the best way
+                            # to do that??
+                            self.e_motor_power[k] = - self.e_rec_e_motor[k] / (self.t_cl[k + 1] - self.t_cl[k])
+                            
+                            self.m_e_motor[k] = (self.e_motor_power[k] 
+                                / (self.n_cl[k] * 2 * math.pi) 
+                                * self.driverobj.carobj.pars_engine["eta_e_motor_re"]
+                            )
+
+
+                            if abs(self.m_e_motor[k]) > max_motor_torque:
+                                raise(Exception("Maximum motor torque exceeded: {}, max: {}".format(self.m_e_motor[k], max_motor_torque)))
+
+                            # check that the maximum power of the drivetrain is not violated
+                            if abs(self.e_motor_power[k]) > max_motor_power:
+                                raise(Exception("Maximum Motor power exceeded: {} max: {}".format(self.e_motor_power[k], max_motor_power)))
 
                         else:
                             self.e_rec_e_motor[k] = 0.0
 
                         # update energy storage (no energy harvested in el. turbocharger while engine is not demanded)
                         self.es_cl[k + 1] = self.es_cl[k] + self.e_rec_e_motor[k]
+
 
                 # reset longitudinal acceleration for next step (almost zero during maximum cornering)
                 a_x = 0.0
@@ -738,6 +858,28 @@ class Lap(object):
         plt.legend(["combustion engine", "electric motor", "powertrain total", "requested"])
         plt.grid()
         plt.show()
+
+    def plot_power(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.trackobj.dists_cl[:-1], self.e_motor_power)
+        ax.set_title("Motor Power")
+        ax.set_xlabel("distance s in m")
+        ax.set_ylabel("Power in Watts")
+        plt.grid()
+        plt.show()
+
+    def plot_throttle(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        plt.plot(self.trackobj.dists_cl[:-1], self.driverobj.throttle_pos)
+        ax.set_title("Throttle Position")
+        ax.set_xlabel("distance s in m")
+        ax.set_ylabel("Throttle position (0-1)")
+        plt.grid()
+        plt.show()
+    
+    
 
     def plot_tire_loads(self):
         f_z_stat_avg = 0.25 * self.driverobj.carobj.pars_general["m"] * self.driverobj.carobj.pars_general["g"]
