@@ -32,6 +32,7 @@
     use_drs1 = false
     use_drs2 = false
     use_pit = false
+    use_elevation = false
 
 # solver options ---------------------------------------------------------------------------------------------------
 # limit_braking_weak_side:  can be None, 'FA', 'RA', 'all' -> set if brake force potential should be determined
@@ -75,7 +76,7 @@
     initial_energy = 0  # must always be zero for race_sim calculations to be correct!
     em_strategy = "FCFB"  # Must be FCFB
     use_recuperation = true
-    use_lift_coast = true
+    use_lift_coast = false
     lift_coast_dist = 10.0
     disable_braking = true
 

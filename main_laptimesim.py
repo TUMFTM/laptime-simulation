@@ -81,8 +81,9 @@ def main(track_opts: dict,
     # CREATE TRACK INSTANCE --------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    trackfilepath = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
-                                    track_opts["trackname"] + ".csv")
+    tmp_track_file_path = os.path.join(repo_path, "laptimesim", "input", "tracks", "racelines",
+                                    track_opts["trackname"])
+    trackfilepath = os.path.join(tmp_track_file_path + ".csv")
 
     vel_lim_glob = np.inf
 
@@ -111,6 +112,10 @@ def main(track_opts: dict,
 
         # plot curvature
         track.plot_curvature()
+
+        if track_opts["use_elevation"]:
+            track.plot_elevation()
+            track.plot_elevation_3d()
 
         # recalculate raceline based on curvature
         track.check_track()

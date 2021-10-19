@@ -443,6 +443,21 @@ class Lap(object):
                               / (self.driverobj.carobj.pars_gearbox["i_trans"][self.gear_cl[i]]
                                  * self.driverobj.carobj.r_driven_tire(vel=self.vel_cl[i])
                                  * self.driverobj.carobj.pars_gearbox["e_i"][self.gear_cl[i]]))
+                
+                # account for available force due to change in elevation
+                if self.trackobj.pars_track["use_elevation"]:
+                    if i == len(self.trackobj.elevation_profile) - 1:
+                        elevation_change = self.trackobj.elevation_profile[0] - self.trackobj.elevation_profile[i]
+                    else:
+                        elevation_change = self.trackobj.elevation_profile[i + 1] - self.trackobj.elevation_profile[i]
+                    elevation_energy = (
+                        elevation_change * 
+                        self.driverobj.carobj.pars_general["m"] *
+                        self.driverobj.carobj.pars_general["g"]
+                    )
+
+                    f_x_powert = f_x_powert - elevation_energy / self.trackobj.stepsize
+
 
                 # calculate reached longitudinal acceleration
                 a_x = ((f_x_powert - self.driverobj.carobj.air_res(vel=self.vel_cl[i], drs=self.trackobj.drs[i])
@@ -450,8 +465,13 @@ class Lap(object):
                        / self.driverobj.carobj.pars_general["m"])
 
                 # calculate velocity in the next point
-                self.vel_cl[i + 1] = math.sqrt(math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize)
-
+                try:
+                    self.vel_cl[i + 1] = math.sqrt(math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize)
+                except ValueError as v:
+                    result = math.pow(self.vel_cl[i], 2) + 2 * a_x * self.trackobj.stepsize
+                    print("velocity: {}, a_x: {}, step_size: {}, result: {}"
+                        .format(self.vel_cl[i], a_x, self.trackobj.stepsize, result))
+                    raise(v)
                 # consider velocity limit if reaching it during this step
                 """This if statement is intended to prevent unnecessary backward loops. Therefore it should only come
                 into operation if the velocity limit is reached from below (i.e. with acceleration) during the current
@@ -499,7 +519,7 @@ class Lap(object):
                 self.es_cl[i + 1] = self.es_cl[i] + e_rec_etc - e_cons_e_motor
 
                 if not self.driverobj.carobj.powertrain_type == "electric" and self.es_cl[i + 1] < 0.0:
-                    self.es_cl[i + 1] = 0.
+                    self.es_cl[i + 1] = 0.0
                 
                 self.e_motor_power[i] = self.driverobj.carobj.power_demand_e_motor_drive(n=self.n_cl[i],
                                                                                          m_e_motor=self.m_e_motor[i])
@@ -619,6 +639,19 @@ class Lap(object):
 
                             f_x_poss = min(f_x_poss, f_x_poss_torque, f_x_poss_power)
                         
+                        # calculate the energy change due to elevation change
+                        if self.trackobj.pars_track["use_elevation"]:
+                            elevation_change = self.trackobj.elevation_profile[i - j - 1 + 1] \
+                                             - self.trackobj.elevation_profile[i - j - 1]
+                            elevation_energy = (
+                                elevation_change * 
+                                self.driverobj.carobj.pars_general["m"] *
+                                self.driverobj.carobj.pars_general["g"]
+                            )
+
+                            # + sign because the f_x_poss is positive for deceleration
+                            # and positive elevation change will also decelerate the vehicle
+                            f_x_poss = f_x_poss + elevation_energy / self.trackobj.stepsize
 
                         # calculate deceleration
                         a_x = (-(f_x_poss + self.driverobj.carobj.air_res(vel=vel_tmp, drs=False)
@@ -673,6 +706,7 @@ class Lap(object):
                         drs_tmp = self.trackobj.drs[k]
                     else:
                         drs_tmp = False
+                    
 
                     f_x_resi = (self.driverobj.carobj.air_res(vel=self.vel_cl[k], drs=drs_tmp)
                                 + self.driverobj.carobj.roll_res(f_z_tot=float(np.sum(self.tire_loads[k]))))
@@ -681,11 +715,19 @@ class Lap(object):
                     a_x_requ = (math.pow(self.vel_cl[k + 1], 2)
                                 - math.pow(self.vel_cl[k], 2)) / (2 * self.trackobj.stepsize)
                     f_x_requ = self.driverobj.carobj.pars_general["m"] * a_x_requ
-
+                    
                     # calculate force that must be provided by the powertrain (or brakes) to reach this acc. force
-                    f_x_powert = f_x_requ + f_x_resi
+                    f_x_powert = f_x_requ + f_x_resi 
+                    
+                    if self.trackobj.pars_track["use_elevation"]:
+                        elevation_change = self.trackobj.elevation_profile[k + 1] - self.trackobj.elevation_profile[k]
+                        elevation_energy = (
+                            elevation_change * 
+                            self.driverobj.carobj.pars_general["m"] *
+                            self.driverobj.carobj.pars_general["g"]
+                        )
 
-                    # print("f_x_requ: {}, f_x_resi: {}, f_x_powert: {}, step: {}".format(f_x_requ, f_x_resi, f_x_powert, self.trackobj.stepsize))
+                        f_x_powert = f_x_powert + elevation_energy / self.trackobj.stepsize
 
                     # check for the two cases "engine demanded" and "engine not demanded"
                     if f_x_powert > 0.0:
@@ -797,6 +839,8 @@ class Lap(object):
                                 * self.driverobj.carobj.pars_engine["eta_e_motor_re"]
                             )
 
+                            if abs(self.m_e_motor[k]) > max_motor_torque:
+                                raise(Exception("Maximum motor torque exceeded: {}, max: {}".format(self.m_e_motor[k], max_motor_torque)))
 
                             if abs(self.m_e_motor[k]) > max_motor_torque:
                                 raise(Exception("Maximum motor torque exceeded: {}, max: {}".format(self.m_e_motor[k], max_motor_torque)))

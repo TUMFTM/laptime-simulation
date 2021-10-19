@@ -118,10 +118,10 @@
         drs_factor = 0.0
     [veh_pars_.engine]
         topology = "RWD"
-        pow_e_motor = 400e3
+        pow_e_motor = 100e3
         eta_e_motor = 0.9
         eta_e_motor_re = 0.9
-        torque_e_motor_max = 400.0
+        torque_e_motor_max = 100.0
     [veh_pars_.gearbox]
         i_trans = [0.056, 0.091]
         n_shift = [19000.0, 19000.0]
