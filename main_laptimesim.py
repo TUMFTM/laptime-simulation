@@ -37,7 +37,6 @@ def main(track_opts: dict,
          sa_opts: dict,
          debug_opts: dict,
          car_config: dict,
-         veh_pars: dict,
          track_pars: dict,) -> laptimesim.src.lap.Lap:
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -82,7 +81,7 @@ def main(track_opts: dict,
     resultsfile = os.path.join(repo_path, "laptimesim", "output", "results-{}.csv".format(date))
     datastore = DataStore(results_file_name=resultsfile,
                             track_pars=track_pars,
-                            car_name=veh_pars[VEHICLE_TAG])
+                            car_name='testing')
 
     datastore.parse_car_config(car_config)
 

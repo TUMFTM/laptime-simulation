@@ -170,6 +170,8 @@ class gearboxParameters():
         parameters["e_i"] = self.e_i
         parameters["eta_g"] = self.eta_g
 
+        return parameters
+
     def return_dict_for_output_csv(self):
         """Return dictionary of parameters in the object.
         variable naming for output to csv."""
@@ -185,7 +187,7 @@ class tireParameters():
     These variables are a mirror
     of what is in the config file."""
     def __init__(self):
-        self.tire_model_exp = tire_model_exp
+        self.tire_model_exp = -1
         self.front_tires = tireParametersSingleAxle()
         self.rear_tires = tireParametersSingleAxle()
     
@@ -313,15 +315,15 @@ class RaceCarModel():
         self._outputs_set = True
 
         # Battery
-        self.battery_parameters.battery_mass = (
-            self.battery_parameters.battery_size /
-            self.battery_parameters.battery_energy_density
+        self.battery_parameters.mass = (
+            self.battery_parameters.size /
+            self.battery_parameters.energy_density
         )
 
         self.general_parameters.pit_time = (
-            self.battery_parameters.battery_mass *
-            self.battery_parameters.battery_mass_pit_factor +
-            self.battery_parameters.battery_change_constant
+            self.battery_parameters.mass *
+            self.battery_parameters.mass_pit_factor +
+            self.battery_parameters.change_constant
         )
 
         # Motor
@@ -340,7 +342,7 @@ class RaceCarModel():
         )
         
         chassis_battery_mass = (
-            self.battery_parameters.battery_mass *
+            self.battery_parameters.mass *
             self.general_parameters.chassis_battery_mass_factor
         )
         
@@ -354,7 +356,7 @@ class RaceCarModel():
             chassis_battery_mass +
             chassis_motor_mass +
             self.engine_parameters.motor_mass +
-            self.battery_parameters.battery_mass
+            self.battery_parameters.mass
         )
 
         self.general_parameters.maximum_allowable_vehicle_mass = (
@@ -375,7 +377,7 @@ class RaceCarModel():
                 .format(max_mass, vehicle_mass)))
 
         # Drag
-        self.dependent_variables.c_w_a = (
+        self.general_parameters.c_w_a = (
             self.general_parameters.frontal_area *
             self.general_parameters.coefficient_of_drag
         )
@@ -412,8 +414,8 @@ class RaceCarModel():
         ) ** 2
 
         battery_power_limit = (
-            self.battery_parameters.battery_size *
-            self.battery_parameters.battery_power_output_factor
+            self.battery_parameters.size *
+            self.battery_parameters.power_output_factor
         )
 
         maximum_motor_power = min(
@@ -511,7 +513,7 @@ class RaceCarModel():
         veh_pars_ = {}
         veh_pars_["powertrain_type"] = self.powertrain_type
         veh_pars_["general"] = self.general_parameters.return_dict_for_laptimesim()
-        for key in veh_pars_["general"].get_keys():
+        for key in veh_pars_["general"].keys():
             if veh_pars_["general"][key] == -1:
                 raise(Exception("Item not set before retrieving it: general, {}".format(key)))
 
@@ -554,6 +556,8 @@ class RaceCarModel():
         self.general_parameters.lf = input_vars["general.lf"]
         self.general_parameters.lr = input_vars["general.lr"]
         self.general_parameters.h_cog = input_vars["general.h_cog"]
+        self.general_parameters.sf = input_vars["general.sf"]
+        self.general_parameters.sr = input_vars["general.sr"]
         self.general_parameters.c_z_a_f = input_vars["general.c_z_a_f"]
         self.general_parameters.c_z_a_r = input_vars["general.c_z_a_r"]
         self.general_parameters.g = input_vars["general.g"]
@@ -566,13 +570,12 @@ class RaceCarModel():
         self.general_parameters.chassis_battery_mass_factor = input_vars["general.chassis_battery_mass_factor"]
         self.general_parameters.car_density = input_vars["general.car_density"]
         self.general_parameters.max_vehicle_weight_ratio = input_vars["general.max_vehicle_weight_ratio"]
-        self.general_parameters.rolling_resistance_mass_factor = input_vars["general.rolling_resistanc_mass_factor"]
+        self.general_parameters.rolling_resistance_mass_factor = input_vars["general.rolling_resistance_mass_factor"]
 
         self.battery_parameters.size = input_vars["battery.size"]
         self.battery_parameters.energy_density = input_vars["battery.energy_density"]
         self.battery_parameters.change_constant = input_vars["battery.change_constant"]
         self.battery_parameters.mass_pit_factor = input_vars["battery.mass_pit_factor"]
-        self.battery_parameters.mass = input_vars["battery.mass"]
 
         self.engine_parameters.topology = input_vars["engine.topology"]
         self.engine_parameters.eta_e_motor = input_vars["engine.eta_e_motor"]
@@ -592,7 +595,7 @@ class RaceCarModel():
         self.tire_parameters.front_tires.fz_0 = input_vars["tires.f.fz_0"]
         self.tire_parameters.front_tires.mux = input_vars["tires.f.mux"]
         self.tire_parameters.front_tires.muy = input_vars["tires.f.muy"]
-        self.tire_parameters.front_tires.dmux_dfz = input_vars["tires.f.dumx_dfz"]
+        self.tire_parameters.front_tires.dmux_dfz = input_vars["tires.f.dmux_dfz"]
         self.tire_parameters.front_tires.dmuy_dfz = input_vars["tires.f.dmuy_dfz"]
         
         self.tire_parameters.rear_tires.circ_ref = input_vars["tires.r.circ_ref"]

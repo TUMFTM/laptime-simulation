@@ -8,6 +8,7 @@ import threading
 import csv
 import numpy as np
 import itertools
+import pandas as pd
 from race_car_model import (
     RaceCarModel
 )
@@ -144,32 +145,41 @@ class DataStore():
         
         """
 
-        # flatten dictionary. all keys are assumed to be the form: "section.parameter"
+        # flatten dictionary. this turnes nested dictionaries into a single
+        # level of dictionary where the key for the flattened data is the
+        # concatenated keys separated by a period.
+        # all keys are assumed to be the form: "section.parameter"
         # ex: general.lf or gearbox.n_shift
-        flattened_car_config = car_config.flatten()
+
+        flattened_car_config = pd.json_normalize(car_config, sep='.')
+        # the return object is pandas.core.frame.DataFrame
+        # neet to convert it back to dict format
+        flattened_car_config = flattened_car_config.to_dict()
+        # below done because of how the to_dict() function returns data
+        for key in flattened_car_config.keys():
+            flattened_car_config[key] = flattened_car_config[key][0]
  
         # iterate over list passed in
         for key in flattened_car_config:
             if key in EXCEPTION_KEYS:
                 # make a list
                 self.input_data_ranges[key] = flattened_car_config[key]
-                make sure this should be pass not continue
-                pass
+                continue
 
             # check type of the value, if its not a list its assumed
             # to be a single value and is then made into a list
             # that is in the same format as the varying lists
             if type(flattened_car_config[key]) is not list:
                 self.input_data_ranges[key] = [float(flattened_car_config[key]),
-                                               float(flattened_car_config[key]),
-                                               1]
+                                            float(flattened_car_config[key]),
+                                            1]
             # type is a list, just add to list
             else:
                 # change type at index 2 for linspace operation later
                 # in generate_unique_sa_combinations
                 flattened_car_config[key][2] = int(flattened_car_config[key][2])
                 self.input_data_ranges[key] = flattened_car_config[key]
-        
+
     def generate_unique_sa_combinations(self):
         """ Function that generates all unique combinations of 
         sensitivity analysis variables.
