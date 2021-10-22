@@ -39,10 +39,8 @@ GRAVITY_TAG = "gravity (m/s^2)"
 AIR_DENSITY_TAG = "air density (kg/m^3)"
 DRS_FACTOR_TAG = "reduction of air resistance due to drs (percent)"
 TOPOLOGY_TAG = "drive configuration of car: fwd, rwd, or awd"
-POW_E_MOTOR_TAG = "Maximum motor power used in laptimesim (Watts)"
 MOTOR_EFFICICENCY_TAG = "Efficiency of motor (%)"
 MOTOR_EFFICICENCY_REGEN_TAG = "Efficiency of motor in regeneration (%)"
-TORQUE_E_MOTOR_MAX_TAG = "Max torque of motor used in laptimesim (Nm)"
 GEAR_RATIO_TAG = "List of gear ratios, output rev/input rev"
 MOTOR_SHIFT_RPM_TAG = "gear shift rpm for gearbox (rpm)"
 GEARBOX_TORSIONAL_MASS_FACTOR_TAG = "Torsional mass factor of gearbox per gear"
@@ -97,6 +95,7 @@ HEADER_ROW = [
     MAX_VEHICLE_WEIGHT_RATIO_TAG, CAR_DENSITY_TAG,
     CHASSIS_BATTERY_MASS_FACTOR_TAG, CHASSIS_MOTOR_MASS_FACTOR_TAG,
     ROLLING_RESISTANCE_MASS_FACTOR_TAG, C_W_A_RACE_CAR_MODEL_TAG,
+    C_W_A_LAPTIMESIM_TAG,
     ROLLING_RESISTANCE_TAG, GWC_TIMES_TAG, BATTERY_POWER_OUTPUT_FACT0R_TAG,
     WINNING_ELECTRIC_CAR_TAG, PIT_DRIVE_THROUGH_PENALTY_TIME, BATTERY_CHANGE_CONSTANT_TAG,
     WINNING_GAS_CAR_LAPS, LF_TAG, LR_TAG, H_COG_TAG, SF_TAG, SR_TAG, C_Z_A_F_TAG, C_Z_A_R_TAG,

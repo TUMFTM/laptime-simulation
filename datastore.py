@@ -61,7 +61,7 @@ class SingleIterationData():
 
         self._iteration_complete = True
 
-        race_car_properties = self.race_car_model.get_vehicle_properties()
+        race_car_properties = self.race_car_model.get_vehicle_properties_for_csv_output()
 
         for key in race_car_properties:
             self._results_list[key] = race_car_properties[key]

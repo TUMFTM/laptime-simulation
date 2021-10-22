@@ -141,10 +141,10 @@ class engineParameters():
         variable naming for output to csv."""
         parameters = {}
         parameters[TOPOLOGY_TAG] = self.topology
-        parameters[POW_E_MOTOR_TAG] = self.motor_max_power
+        parameters[MOTOR_MAX_POWER_TAG] = self.motor_max_power
         parameters[MOTOR_EFFICICENCY_TAG] = self.eta_e_motor
         parameters[MOTOR_EFFICICENCY_REGEN_TAG] = self.eta_e_motor_re
-        parameters[TORQUE_E_MOTOR_MAX_TAG] = self.motor_max_torque
+        parameters[MOTOR_MAX_TORQUE_TAG] = self.motor_max_torque
         parameters[MOTOR_CONSTANT_TAG] = self.motor_constant
         parameters[MOTOR_TORQUE_DENSITY_TAG] = self.motor_torque_density
         parameters[MOTOR_MASS_TAG] = self.motor_mass
@@ -333,8 +333,6 @@ class RaceCarModel():
         )
         self.engine_parameters.motor_max_power = self._calculate_max_motor_power()
 
-        self.engine_parameters.motor_max_power = self._calculate_max_motor_power()
-
         # Chassis
         self.general_parameters.net_chassis_mass = (
             self.general_parameters.vehicle_curb_mass - 
@@ -470,10 +468,8 @@ class RaceCarModel():
         
         """
 
-        if not self._inputs_set or \
-           not self._relationships_set or \
-           not self._outputs_set:
-            raise(Exception("Must set inputs, relationships, and calculate outputs before getting these values"))
+        if not self._outputs_set:
+            raise(Exception("Must calculate outputs before getting these values"))
 
         output = {}
         general_params = self.general_parameters.return_dict_for_output_csv()
@@ -491,6 +487,10 @@ class RaceCarModel():
         tire_params = self.tire_parameters.return_dict_for_output_csv()
         for key in tire_params:
             output[key] = tire_params[key]
+        
+        battery_params = self.battery_parameters.return_dict_for_output_csv()
+        for key in battery_params:
+            output[key] = battery_params[key]
         
         return output
     
@@ -576,7 +576,8 @@ class RaceCarModel():
         self.battery_parameters.energy_density = input_vars["battery.energy_density"]
         self.battery_parameters.change_constant = input_vars["battery.change_constant"]
         self.battery_parameters.mass_pit_factor = input_vars["battery.mass_pit_factor"]
-
+        self.battery_parameters.power_output_factor = input_vars["battery.power_output_factor"]
+        
         self.engine_parameters.topology = input_vars["engine.topology"]
         self.engine_parameters.eta_e_motor = input_vars["engine.eta_e_motor"]
         self.engine_parameters.eta_e_motor_re = input_vars["engine.eta_e_motor_re"]
