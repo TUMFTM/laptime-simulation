@@ -342,8 +342,8 @@ if __name__ == '__main__':
     # USER INPUT -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    # F1 qualifying mode:   DRS activated, EM strategy FCFB
-    # F1 race mode:         DRS as desired, EM strategy LBP
+    # F1 qualifying mode:   DRS activated, EM strategy FCFB, initial_energy 4.0MJ, full power of 575kW
+    # F1 race mode:         DRS as desired, EM strategy LBP, initial_energy 0.0MJ, power reduced to 546kW (-5%)
     # FE qualifying mode:   DRS deactivated, EM strategy FCFB
     # FE race mode:         DRS deactivated, EM strategy FCFB + lift&coast
     # tracks must be unclosed, i.e. last point != first point!
@@ -407,7 +407,7 @@ if __name__ == '__main__':
                     "yellow_s2": False,
                     "yellow_s3": False,
                     "yellow_throttle": 0.3,
-                    "initial_energy": 4.58e6,
+                    "initial_energy": 4.0e6,
                     "em_strategy": "FCFB",
                     "use_recuperation": True,
                     "use_lift_coast": False,
